@@ -5,3 +5,4 @@ dist
 .env
 public
 sqlite.db
+node-http-gammu.db

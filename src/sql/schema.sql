@@ -1,0 +1,6 @@
+CREATE TABLE sms (
+  id TEXT NOT NULL PRIMARY KEY,
+  receiver TEXT NOT NULL,
+  message TEXT NOT NULL,
+  status TEXT NOT NULL
+);

@@ -12,6 +12,8 @@ The following fields must be configured:
 
 ```
 SERVER_PORT=5000
+DB_PATH=node-http-gammu.db
+SQLITE_SCHEMA_PATH=src/sql/schema.sql
 ```
 
 ## Installation
