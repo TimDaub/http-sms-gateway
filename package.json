@@ -1,0 +1,37 @@
+{
+  "name": "http-gammu",
+  "version": "0.0.1",
+  "description": "A http API that exposes basic functionality of gammu for sending and receiving SMS",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava",
+    "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/TimDaub/node-http-gammu.git"
+  },
+  "keywords": [
+    "gammu",
+    "wammu",
+    "sms",
+    "receiving",
+    "sending",
+    "http",
+    "rest"
+  ],
+  "author": "Tim Daubenschütz <tim@daubenschuetz.de> (https://timdaub.github.io)",
+  "bugs": {
+    "url": "https://github.com/TimDaub/node-http-gammu/issues"
+  },
+  "homepage": "https://github.com/TimDaub/node-http-gammu#readme",
+  "dependencies": {
+    "compression": "1.7.4",
+    "dotenv": "8.2.0",
+    "express": "4.17.1"
+  },
+  "devDependencies": {
+    "ava": "3.12.1",
+    "supertest": "4.0.2"
+  }
+}
