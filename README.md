@@ -6,7 +6,13 @@ receiving SMS.
 
 ## Prerequisites 
 
-[WIP]
+### Creating a local copy of `.env`
+
+The following fields must be configured:
+
+```
+SERVER_PORT=5000
+```
 
 ## Installation
 
