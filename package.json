@@ -29,7 +29,9 @@
     "better-sqlite3": "7.1.0",
     "compression": "1.7.4",
     "dotenv": "8.2.0",
-    "express": "4.17.1"
+    "express": "4.17.1",
+    "express-validator": "6.6.1",
+    "isgsm7": "0.1.0"
   },
   "devDependencies": {
     "ava": "3.12.1",
