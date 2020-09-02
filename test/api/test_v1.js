@@ -1,11 +1,25 @@
 //@format
 const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, `../../.env`) });
-const test = require("ava");
+const test = require("ava").serial;
 const supertest = require("supertest");
+const { unlinkSync } = require("fs");
 
-const { BEARER_TOKEN } = process.env;
 const app = require("../../src/server.js");
+const { init } = require(`../../src/controllers/db.js`);
+
+const { DB_PATH, SQLITE_SCHEMA_PATH, BEARER_TOKEN } = process.env;
+const sqlConfig = {
+  path: path.resolve(__dirname, `../../${DB_PATH}`),
+  schema: path.resolve(__dirname, `../../${SQLITE_SCHEMA_PATH}`),
+  options: {
+    verbose: console.info
+  }
+};
+
+const teardown = () => {
+  unlinkSync(sqlConfig.path);
+};
 
 test("if server responds with error if body is malformed", async t => {
   const req = await supertest(app)
@@ -15,6 +29,8 @@ test("if server responds with error if body is malformed", async t => {
 });
 
 test("if server responds with id", async t => {
+  init();
+
   const expected = {
     receiver: "49152901820",
     text: "test"
@@ -26,6 +42,8 @@ test("if server responds with id", async t => {
   t.assert(req.status === 202);
   t.assert(req.body.status === "SCHEDULED");
   t.assert(req.body.id);
+
+  t.teardown(teardown);
 });
 
 test("if server rejects invalid values", async t => {

@@ -4,7 +4,7 @@
   "description": "A http API that exposes basic functionality of gammu for sending and receiving SMS",
   "main": "index.js",
   "scripts": {
-    "test": "ava",
+    "test": "ava --serial",
     "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js'"
   },
   "repository": {
@@ -36,6 +36,8 @@
   },
   "devDependencies": {
     "ava": "3.12.1",
+    "mock-spawn": "0.2.6",
+    "rewire": "5.0.0",
     "supertest": "4.0.2"
   }
 }
