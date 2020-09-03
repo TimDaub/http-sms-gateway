@@ -1,7 +1,7 @@
 {
-  "name": "http-gammu",
+  "name": "http-sms-gateway",
   "version": "0.0.1",
-  "description": "A http API that exposes basic functionality of gammu for sending and receiving SMS",
+  "description": "A server for sending and receiving SMS via HTTP",
   "main": "index.js",
   "scripts": {
     "test": "ava --serial",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/TimDaub/node-http-gammu.git"
+    "url": "git+ssh://git@github.com/TimDaub/http-sms-gateway.git"
   },
   "keywords": [
     "gammu",
@@ -22,9 +22,9 @@
   ],
   "author": "Tim Daubenschütz <tim@daubenschuetz.de> (https://timdaub.github.io)",
   "bugs": {
-    "url": "https://github.com/TimDaub/node-http-gammu/issues"
+    "url": "https://github.com/TimDaub/http-sms-gateway/issues"
   },
-  "homepage": "https://github.com/TimDaub/node-http-gammu#readme",
+  "homepage": "https://github.com/TimDaub/http-sms-gateway#readme",
   "dependencies": {
     "better-sqlite3": "7.1.0",
     "compression": "1.7.4",

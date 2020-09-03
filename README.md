@@ -1,8 +1,6 @@
-# node-http-gammu
+# http-sms-gateway
 
-> A http API that exposes basic functionality of
-> [wammu/gammu](https://wammu.eu/) for sending and
-receiving SMS.
+> A server for sending and receiving SMS via HTTP.
 
 ## Prerequisites 
 
@@ -12,7 +10,7 @@ The following fields must be configured:
 
 ```
 SERVER_PORT=5000
-DB_PATH=node-http-gammu.db
+DB_PATH=http-sms-gateway.db
 SQLITE_SCHEMA_PATH=src/sql/schema.sql
 BEARER_TOKEN=abc
 ```
