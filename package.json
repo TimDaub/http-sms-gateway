@@ -32,11 +32,11 @@
     "express": "4.17.1",
     "express-bearer-token": "2.4.0",
     "express-validator": "6.6.1",
-    "isgsm7": "0.1.0"
+    "isgsm7": "0.1.0",
+    "serialport-gsm": "3.3.1"
   },
   "devDependencies": {
     "ava": "3.12.1",
-    "mock-spawn": "0.2.6",
     "rewire": "5.0.0",
     "supertest": "4.0.2"
   }

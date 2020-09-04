@@ -1,69 +1,65 @@
 //@format
 const { EventEmitter, once } = require("events");
-const { spawn } = require("child_process");
+const serialportgsm = require("serialport-gsm");
 
 const { getAllMessages, updateStatus } = require("./db.js");
 const { ImplementationError } = require("../errors.js");
 
+const { DEVICE_PATH, SIM_PIN } = process.env;
+
 const emitter = new EventEmitter();
 const getEventEmitter = () => emitter;
-const sendAllScheduled = () => getAllMessages("SCHEDULED").forEach(send);
-const updateDB = ({ id, state }) =>
-  updateStatus(id, state) && emitter.emit("partial_done_outgoing", { id });
-emitter.on("process_outgoing", sendAllScheduled);
-emitter.on("partial_progress_outgoing", updateDB);
+const sendAllScheduled = () => {
+  getAllMessages("SCHEDULED").forEach(send);
+  emitter.emit("done_outgoing");
+};
+const updateDB = ({ id, response }) =>
+  updateStatus(id, response) && emitter.emit("partial_done_outgoing", { id });
 
-function parseOutput(out) {
-  // NOTE: Following are output formats of the gammu cli:
-  //   pi@raspberrypi:~$ gammu sendsms TEXT <receiver> -text "this is a final test"
-  //   If you want break, press Ctrl+C...
-  //   Sending SMS 1/1....waiting for network answer..OK, message reference=15
-  //   pi@raspberrypi:~$ gammu sendsms TEXT 018 -text "this is a final test"
-  //   If you want break, press Ctrl+C...
-  //   Sending SMS 1/1....waiting for network answer..error 28, message reference=-1
-  //   Unknown error.
-  //   and in the node.js shell:
-  //   > spawnSync("gammu", ["sendsms", "TEXT", "<receiver>", "-text", "some text"]).output.toString()
-  //   ',Sending SMS 1/1....waiting for network answer..OK, message reference=18\n,If you want break, press Ctrl+C...\n'
-  //   > spawnSync("gammu", ["sendsms", "TEXT", "018", "-text", "some text"]).output.toString()
-  //   ',Sending SMS 1/1....waiting for network answer..error 28, message reference=-1\nUnknown error.\n,If you want break, press Ctrl+C...\n'
-  if (out.includes("Sending SMS")) {
-    const pattern = new RegExp(
-      "\\.\\.(OK|error\\s\\d{2}),\\smessage reference=(.*?)\\n"
-    );
-    const [, state, reference] = out.match(pattern);
-    return {
-      // NOTE: I haven't found a reference regarding the error number. Once I've
-      // found one, errors can be matched distinctively.
-      state,
-      reference
-    };
-  } else {
-    throw new ImplementationError(
-      `Parsing for this type of output not supported: ${out}`
-    );
-  }
-}
+const modem = serialportgsm.Modem();
+const options = {
+  baudRate: 19200,
+  dataBits: 8,
+  parity: "none",
+  stopBits: 1,
+  xon: false,
+  rtscts: false,
+  xoff: false,
+  xany: false,
+  autoDeleteOnReceive: true,
+  enableConcatenation: true,
+  incomingCallIndication: false,
+  incomingSMSIndication: false,
+  pin: SIM_PIN,
+  customInitCommand: "AT^CURC=0",
+  logger: console
+};
+modem.open(DEVICE_PATH, options);
 
-// NOTE: Sending a SMS successfully can take some time, and since all sync
-// child_process functions are blocking node.js's event loop, we opt to use the
-// event listener pattern here.
-async function send({ receiver, text, id }) {
-  const gammu = spawn("gammu", ["sendsms", "TEXT", receiver, "-text", text]);
+modem.on("open", () => {
+  modem.on("onNewMessage", handleNewMessage);
+  emitter.on("process_outgoing", sendAllScheduled);
+  emitter.on("partial_progress_outgoing", updateDB);
+  emitter.on("error", () => console.log("not implemented"));
+});
 
-  let out;
-  gammu.stdout.on("data", data => (out += data));
-  gammu.stderr.on("data", data => (out += data));
-  gammu.on("close", () => {
-    let output = parseOutput(out);
-    output = { ...output, id };
+function send({ receiver, text, id }) {
+  modem.sendSMS(receiver, text, false, res => {
+    const progress = { ...res.data, id };
 
-    if (output.state.includes("error")) {
-      emitter.emit("error", { message: "Error sending sms", output });
-    } else if (output.state.includes("OK")) {
-      emitter.emit("partial_progress_outgoing", output);
+    if (res.status === "success") {
+      emitter.emit("partial_progress_outgoing", progress);
+    } else {
+      console.error(progress);
+      emitter.emit("error", progress);
     }
   });
 }
 
-module.exports = { getEventEmitter, send, parseOutput };
+function handleNewMessage(data) {
+  //Event New Message: {"sender":"number","message":"🤡","index":1,"dateTimeSent":"2020-09-03T12:47:44.000Z","header":{"encoding":"16bit","smsc":"4917
+  //  22270333","smscType":"INTERNATIONAL","smscPlan":"ISDN"}}
+  // TODO: Store received message in backend
+}
+
+module.exports = { getEventEmitter, send, handleNewMessage };
