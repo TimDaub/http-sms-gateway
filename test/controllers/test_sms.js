@@ -1,9 +1,7 @@
 // @format
 const test = require("ava").serial;
-const rewire = require("rewire");
-const { EventEmitter } = require("events");
 
-const sms = rewire("../../src/controllers/sms.js");
+const SMSHandler = require("../../src/controllers/sms.js");
 const { init, store, dump } = require("../../src/controllers/db.js");
 
 const teardown = () => {
@@ -13,19 +11,17 @@ const teardown = () => {
 test("if sms is sent and output is returned", async t => {
   init();
 
-  let modem = sms.__get__("modem");
-  modem.sendSMS = (receiver, text, alert, cb) => cb({ status: "success" });
-  sms.__set__("modem", modem);
-  modem.emit("open");
-  const emitter = new EventEmitter();
+  const smsHandler = new SMSHandler({});
+  smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
+    cb({ status: "success" });
+  smsHandler.modem.emit("open");
   const promise = new Promise(resolve => {
-    emitter.on("partial_progress_outgoing", res => {
+    smsHandler.on("progress", res => {
       resolve(true);
     });
   });
-  sms.__set__("emitter", emitter);
 
-  const output = sms.send({
+  smsHandler.send({
     receiver: "0152901820",
     text: "this is a text",
     id: "abc"
@@ -38,19 +34,17 @@ test("if sms is sent and output is returned", async t => {
 test("if sms errors, error is sent", async t => {
   init();
 
-  let modem = sms.__get__("modem");
-  modem.sendSMS = (receiver, text, alert, cb) => cb({ status: "fail" });
-  sms.__set__("modem", modem);
-  modem.emit("open");
-  const emitter = new EventEmitter();
-  const promise = new Promise((resolve, reject) => {
-    emitter.on("error", res => {
+  const smsHandler = new SMSHandler({});
+  smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
+    cb({ status: "fail" });
+  smsHandler.modem.emit("open");
+  const promise = new Promise(resolve => {
+    smsHandler.on("error", res => {
       resolve(true);
     });
   });
-  sms.__set__("emitter", emitter);
 
-  const output = sms.send({
+  smsHandler.send({
     receiver: "0152901820",
     text: "this is a text",
     id: "abc"
@@ -64,20 +58,22 @@ test("if messages from db get sent", async t => {
   init();
 
   store({ id: "abc", receiver: "123", text: "ein test", status: "SCHEDULED" });
+  store({ id: "cba", receiver: "321", text: "tset nie", status: "SCHEDULED" });
 
-  let modem = sms.__get__("modem");
-  modem.sendSMS = (receiver, text, alert, cb) =>
+  const smsHandler = new SMSHandler({});
+  smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
     cb({ status: "success", data: { response: "message sent successfully" } });
-  sms.__set__("modem", modem);
-  modem.emit("open");
-  const emitter = sms.__get__("emitter");
+  smsHandler.modem.emit("open");
   const promise = new Promise(resolve => {
-    emitter.on("done_outgoing", res => {
-      resolve(true);
+    let count = 0;
+    smsHandler.on("progress", res => {
+      count++;
+      if (count > 1) {
+        resolve(true);
+      }
     });
   });
-  emitter.emit("process_outgoing");
-  sms.__set__("emitter", emitter);
+  smsHandler.sendAll();
 
   t.assert(await promise);
   t.teardown(teardown);

@@ -41,7 +41,6 @@
   },
   "devDependencies": {
     "ava": "3.12.1",
-    "rewire": "5.0.0",
     "supertest": "4.0.2"
   }
 }
