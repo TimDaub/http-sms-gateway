@@ -5,4 +5,4 @@ dist
 .env
 public
 sqlite.db
-node-http-gammu.db
+http-sms-gateway.db
