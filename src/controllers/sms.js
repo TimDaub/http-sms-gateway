@@ -1,5 +1,5 @@
 //@format
-const { EventEmitter, once } = require("events");
+const { EventEmitter } = require("events");
 const serialportgsm = require("serialport-gsm");
 
 const { getAllMessages, updateStatus } = require("./db.js");

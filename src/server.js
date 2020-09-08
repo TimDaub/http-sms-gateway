@@ -24,9 +24,9 @@ app.use("/api/v1", apiV1);
 app.use(compression());
 
 if (NODE_ENV !== "test") {
-  const { getEventEmitter } = require("./controllers/tasks.js");
-  const tasks = getEventEmitter();
-  setInterval(() => tasks.emit("process_outgoing"), 1000);
+  const { getEventEmitter } = require("./controllers/sms.js");
+  const sms = getEventEmitter();
+  setInterval(() => sms.emit("process_outgoing"), 1000);
 }
 
 app.listen(SERVER_PORT, () => {
