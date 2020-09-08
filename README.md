@@ -2,24 +2,9 @@
 
 > A server for sending and receiving SMS via HTTP.
 
-## Prerequisites 
+## Prerequisites and Installation
 
-### Creating a local copy of `.env`
-
-The following fields must be configured:
-
-```
-SERVER_PORT=5000
-DB_PATH=http-sms-gateway.db
-SQLITE_SCHEMA_PATH=src/sql/schema.sql
-BEARER_TOKEN=abc
-DEVICE_PATH=/dev/ttyUSB0
-SIM_PIN=1234
-```
-
-## Installation
-
-[WIP]
+See [setup.md](./docs/setup.md).
 
 ## Copyright notice
 
