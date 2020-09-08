@@ -3,9 +3,9 @@ const express = require("express");
 const sqlite = require("better-sqlite3");
 const { body, validationResult } = require("express-validator");
 const isgsm7 = require("isgsm7");
+const { v4: uuidv4 } = require("uuid");
 
 const { store } = require("../controllers/db.js");
-const { genHash } = require("../util.js");
 
 const v1 = express.Router();
 
@@ -24,7 +24,7 @@ v1.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const id = genHash(`${req.body.receiver}:${req.body.text}`);
+    const id = uuidv4();
     const msg = {
       receiver: req.body.receiver,
       text: req.body.text,
