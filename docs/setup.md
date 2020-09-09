@@ -1,4 +1,4 @@
-# Hardware
+# Setup
 
 http-sms-gateway is written to run on a Raspberry Pi 4. The following
 document outlines a setup for such device in combination with a Huawei
