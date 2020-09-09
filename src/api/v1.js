@@ -4,6 +4,7 @@ const sqlite = require("better-sqlite3");
 const { body, validationResult } = require("express-validator");
 const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
+const createError = require("http-errors");
 
 const { store } = require("../controllers/db.js");
 
@@ -18,10 +19,10 @@ v1.post(
     }
     return true;
   }),
-  (req, res) => {
+  (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return next(createError(400, "Body is malformed"), errors.array());
     }
 
     const id = uuidv4();

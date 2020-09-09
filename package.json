@@ -6,7 +6,8 @@
   "scripts": {
     "test": "ava --serial",
     "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js'",
-    "init": "node ./scripts/init.js"
+    "init": "node ./scripts/init.js",
+    "production": "NODE_ENV='production' forever start src/server.js"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,7 @@
     "express": "4.17.1",
     "express-bearer-token": "2.4.0",
     "express-validator": "6.6.1",
+    "http-errors": "1.8.0",
     "isgsm7": "0.1.0",
     "nodemon": "2.0.4",
     "serialport-gsm": "3.3.1",
@@ -41,6 +43,7 @@
   },
   "devDependencies": {
     "ava": "3.12.1",
+    "forever": "3.0.2",
     "supertest": "4.0.2"
   }
 }

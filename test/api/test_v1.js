@@ -56,7 +56,7 @@ test("if server rejects invalid values", async t => {
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send(expected);
   t.assert(req.status === 400);
-  t.assert(req.body.errors.length === 2);
+  t.assert(req.error);
 });
 
 test("if server rejects request that is not authorized", async t => {

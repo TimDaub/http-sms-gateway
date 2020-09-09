@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const compression = require("compression");
 const bearerToken = require("express-bearer-token");
+const createError = require("http-errors");
 
 const apiV1 = require("./api/v1.js");
 const SMSHandler = require("./controllers/sms.js");
@@ -16,7 +17,7 @@ const tokenAuth = (req, res, next) => {
   if (req.token === BEARER_TOKEN) {
     next();
   } else {
-    res.status(401).send();
+    return next(createError(401, "Authorization header is missing or invalid"));
   }
 };
 
