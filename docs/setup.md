@@ -201,6 +201,14 @@ $ curl -d '{"receiver":"<your number>", "text":"posted from curl"}' \
 -X POST http://localhost:5000/api/v1/sms
 ```
 
+### Keeping your Raspberry Pi connected to the Wifi
+
+I've had situations where my RPi would disconnect from my home network every
+day. I've checked the syslogs and so on but couldn't find a solution. For now,
+I've configured it to repeatedly turn of [Wifi Power
+Management](https://unix.stackexchange.com/a/299092) in the hope to resolve the
+issue. I'll update this section when new information becomes available.
+
 ## References
 
 - 1: https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet
