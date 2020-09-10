@@ -12,13 +12,23 @@ class SMSHandler extends EventEmitter {
 
     this.modem = serialportgsm.Modem();
     this.modem.open(DEVICE_PATH, options);
+    this.modem.on("open", () => this.emit("open"));
 
     this.sendAll = this.sendAll.bind(this);
     this.send = this.send.bind(this);
+    this.receiveAll = this.receiveAll.bind(this);
   }
 
   sendAll() {
     getAllMessages("SCHEDULED").forEach(this.send);
+  }
+
+  receiveAll() {
+    this.modem.getSimInbox((inbox, err) => {
+      if (err) console.error(err);
+
+      console.info(inbox);
+    });
   }
 
   send({ receiver, text, id }) {

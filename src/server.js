@@ -29,8 +29,11 @@ app.use(compression());
 
 if (NODE_ENV !== "test") {
   const sms = new SMSHandler(smsOptions);
+  sms.on("open", () => {
+    setInterval(sms.sendAll, 1000);
+    setInterval(sms.receiveAll, 1000);
+  });
   sms.on("progress", ({ id, response }) => updateStatus(id, response));
-  setInterval(sms.sendAll, 1000);
 }
 
 app.listen(SERVER_PORT, () => {

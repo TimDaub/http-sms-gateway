@@ -9,7 +9,7 @@ module.exports = {
   rtscts: false,
   xoff: false,
   xany: false,
-  autoDeleteOnReceive: true,
+  autoDeleteOnReceive: false,
   enableConcatenation: true,
   incomingCallIndication: false,
   incomingSMSIndication: false,
