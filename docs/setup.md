@@ -84,9 +84,83 @@ And restart
 $ sudo service ssh restart
 ```
 
-## Setting up the mobile network dongle
+## Setting up the Huawei E3531 mobile network dongle
 
-- Follow [this tutorial](https://github.com/EMnify/doc/wiki/How-to-use-a-Huawei-E3531-in-Modem-Mode/630650f7d32a8a001aacff86634920b12638e1a8).
+A warning: Setting up a Huawei mobile network dongle can be quite painful and
+time intensive. Conceptionally, these dongles exist in Ubuntu as different
+devices depending if they're launched as "Mass Storage Device" or as "Modem".
+
+This is reflected in a value representing the "product" and another one
+representing the "vendor". In my case, I'm using a Huawei E3531i-2. When
+pluggin it in, it's `vendorID:productID` is `12d1:1f01` (Mass Storage Mode).
+
+```bash
+$ lsusb
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 003: ID 12d1:1f01 Huawei Technologies Co., Ltd. E353/E3131 (Mass storage mode)
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+```
+
+There's a tool called USB-modeswitch, that allows you to switch the device from
+mass storage to modem mode. For Huawei devices, according to the developer, 
+there's three modes [5]:
+
+```
+1. MessageContent="55534243123456780600000080000601000000000000000000000000000000"
+2. MessageContent="55534243123456780000000000000011062000000100010100000000000000"
+3. MessageContent="55534243123456780000000000000011063000000100010000000000000000"
+```
+
+Where:
+
+1. is the "Windows" mode
+2. is the "Linux" mode, which is not always serial/PPP but also ethernet-like or "qmi".
+3. is the "Fallback" mode which provides serial/PPP ports - only on not-so-current models though.
+
+To switch a device, you need to invoke `usb_modeswitch` like this:
+
+```bash
+# Install usb-modeswitch
+$ apt-get install ppp usb-modeswitch usb-modeswitch-data
+# switch the dongle
+$ sudo usb_modeswitch -W -I -v <vendorId> -p <productId> -M <MessageContent>
+```
+
+Note that in the above command, `productId` refers to the dongle's id in mass
+storage mode. Once the device is switched over to another mode, its productId
+changes. In the case of my Huawei E3531i-2, it goes from `12d1:1f01` to
+`12d1:155e` when I'm switching to (3.) fallback mode.
+
+```bash
+$ sudo usb_modeswitch -W -I -v 12d1 -p 1f01 -M 55534243123456780000000000000011063000000100010000000000000000
+```
+
+I'm interested in fallback mode, as it allows us to communicate using serial
+ports, which is what we want.
+
+Unfortunately, this process will have to be repeated continously now every time
+the USB dongle is re-plugged or the RPI reboots. We'll try to automate it. I
+was lazy so I've come up with something very simple. Add a cron job with `sudo
+crontab -e` and paste (make sure to edit crontab with sudo!):
+
+```
+*/1 * * * * sudo usb_modeswitch -W -I -v 12d1 -p 1f01 -M 55534243123456780000000000000011063000000100010000000000000000
+```
+
+Lastly, this is how your device should now show up:
+
+```bash
+$ lsusb
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 004: ID 12d1:155e Huawei Technologies Co., Ltd.
+Bus 001 Device 002: ID 2109:3431 VIA Labs, Inc. Hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+```
+
+Note that for some reason, the official usb_modeswitch discussion board is
+hosted under https://www.draisberghof.de. Just a note so you don't get confused
+when searching online! Additional references can be found in [2, 3, 4].
 
 ## Installing dependencies
 
@@ -209,6 +283,14 @@ I've configured it to repeatedly turn of [Wifi Power
 Management](https://unix.stackexchange.com/a/299092) in the hope to resolve the
 issue. I'll update this section when new information becomes available.
 
+Update:
+
+10/09/20: Pi is still reachable after one day.
+
 ## References
 
 - 1: https://ubuntu.com/tutorials/how-to-install-ubuntu-on-your-raspberry-pi#3-wifi-or-ethernet
+- 2: https://www.draisberghof.de/usb_modeswitch/bb/viewtopic.php?f=4&t=1999&sid=629d04aa2d16358e40dd05779342478b&start=15
+- 3: https://github.com/EMnify/doc/wiki/How-to-use-a-Huawei-E3531-in-Modem-Mode/630650f7d32a8a001aacff86634920b12638e1a8
+- 4: https://gist.github.com/elacheche/aa5a5e42b11e8deb6187
+- 5: https://www.draisberghof.de/usb_modeswitch/bb/viewtopic.php?f=4&t=1999&p=16551&hilit=E3531i+2#p16551
