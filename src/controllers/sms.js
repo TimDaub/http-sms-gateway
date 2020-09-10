@@ -25,9 +25,24 @@ class SMSHandler extends EventEmitter {
 
   receiveAll() {
     this.modem.getSimInbox((inbox, err) => {
-      if (err) console.error(err);
+      if (err) {
+        console.error(err);
+        this.emit("error", err);
+      }
+      if (inbox && inbox.data && inbox.data.length === 0) {
+        // no new messages
+        return;
+      }
 
-      console.info(inbox);
+      const messages = inbox.data.map(
+        ({ sender, message, index, dateTimeSent }) => ({
+          sender,
+          message,
+          index,
+          dateTimeSent
+        })
+      );
+      messages.forEach(message => this.emit("message", message));
     });
   }
 

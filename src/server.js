@@ -34,6 +34,8 @@ if (NODE_ENV !== "test") {
     setInterval(sms.receiveAll, 1000);
   });
   sms.on("progress", ({ id, response }) => updateStatus(id, response));
+  // TODO: Save new message to DB
+  sms.on("message", msg => console.log("new message", msg));
 }
 
 app.listen(SERVER_PORT, () => {
