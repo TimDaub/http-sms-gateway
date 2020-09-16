@@ -4,12 +4,9 @@ const express = require("express");
 const compression = require("compression");
 const bearerToken = require("express-bearer-token");
 const createError = require("http-errors");
-const { v4: uuidv4 } = require("uuid");
 
 const apiV1 = require("./api/v1.js");
-const SMSHandler = require("./controllers/sms.js");
-const smsOptions = require("./options.js");
-const { incoming, outgoing } = require("./controllers/db.js");
+const smsRoutine = require("./routines/sms.js");
 
 const { NODE_ENV, SERVER_PORT, BEARER_TOKEN } = process.env;
 const app = express();
@@ -29,19 +26,7 @@ app.use("/api/v1", apiV1);
 app.use(compression());
 
 if (NODE_ENV !== "test") {
-  const sms = new SMSHandler(smsOptions);
-  sms.on("open", () => {
-    setInterval(sms.sendAll, 1000);
-    setInterval(sms.receiveAll, 1000);
-  });
-  sms.on("progress", ({ id, response }) =>
-    outcoming.updateStatus(id, response)
-  );
-  sms.on("message", msg => {
-    const id = uuidv4();
-    // TODO: Delete msg from sim card
-    incoming.store({ ...msg, id });
-  });
+  smsRoutine.launch();
 }
 
 app.listen(SERVER_PORT, () => {

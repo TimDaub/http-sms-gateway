@@ -42,7 +42,6 @@ class SMSHandler extends EventEmitter {
           dateTimeSent
         })
       );
-      console.log("run");
 
       messages.forEach(message => {
         this.modem.deleteMessage(message, (msg, err) => {
@@ -70,5 +69,4 @@ class SMSHandler extends EventEmitter {
     });
   }
 }
-
 module.exports = SMSHandler;
