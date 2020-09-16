@@ -6,7 +6,7 @@ const test = require("ava").serial;
 const { existsSync, unlinkSync } = require("fs");
 const sqlite = require("better-sqlite3");
 
-const { init, outgoing } = require(`${src}/controllers/db.js`);
+const { init, outgoing, incoming } = require(`${src}/controllers/db.js`);
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 
 const sqlConfig = {
@@ -85,5 +85,33 @@ test("if function updates status in db", t => {
   outgoing.updateStatus(expected.id, "lol");
   const [msg] = outgoing.getAllMessages("lol");
   t.deepEqual({ ...expected, status: "lol" }, msg);
+  t.teardown(teardown);
+});
+
+test("if store stores incoming message", t => {
+  init();
+  const expected = {
+    id: "abc",
+    sender: "1234",
+    message: "hello",
+    dateTimeSent: new Date().toISOString()
+  };
+
+  incoming.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const message = db
+    .prepare(`SELECT * FROM incoming WHERE id = ?`)
+    .get(expected.id);
+  // NOTE: serialport-gsm reports back with a property `message`, however our
+  // property for the messages content is called `text`
+  t.deepEqual(
+    {
+      id: expected.id,
+      sender: expected.sender,
+      text: expected.message,
+      dateTimeSent: expected.dateTimeSent
+    },
+    message
+  );
   t.teardown(teardown);
 });

@@ -42,7 +42,18 @@ class SMSHandler extends EventEmitter {
           dateTimeSent
         })
       );
-      messages.forEach(message => this.emit("message", message));
+      console.log("run");
+
+      messages.forEach(message => {
+        this.modem.deleteMessage(message, (msg, err) => {
+          if (err) {
+            console.error(err);
+            this.emit("error", err);
+          }
+
+          this.emit("message", message);
+        });
+      });
     });
   }
 
@@ -59,9 +70,5 @@ class SMSHandler extends EventEmitter {
     });
   }
 }
-// TODO: Allow receiving
-//Event New Message: {"sender":"<number>","message":"🤡","index":1,"dateTimeSent":"2020-09-03T12:47:44.000Z","header":{"encoding":"16bit","smsc":"4917
-//  22270333","smscType":"INTERNATIONAL","smscPlan":"ISDN"}}
-// TODO: Store received message in backend
 
 module.exports = SMSHandler;

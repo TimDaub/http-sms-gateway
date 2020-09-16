@@ -37,7 +37,6 @@ test("if sms errors, error is sent", async t => {
   const smsHandler = new SMSHandler({});
   smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
     cb({ status: "fail" });
-  smsHandler.modem.emit("open");
   const promise = new Promise(resolve => {
     smsHandler.on("error", res => {
       resolve(true);
@@ -73,7 +72,6 @@ test("if messages from db get sent", async t => {
   const smsHandler = new SMSHandler({});
   smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
     cb({ status: "success", data: { response: "message sent successfully" } });
-  smsHandler.modem.emit("open");
   const promise = new Promise(resolve => {
     let count = 0;
     smsHandler.on("progress", res => {
@@ -87,4 +85,29 @@ test("if messages from db get sent", async t => {
 
   t.assert(await promise);
   t.teardown(teardown);
+});
+
+test("if incoming message is stored in db and deleted from sim", async t => {
+  init();
+  const expected = {
+    sender: "0123456789",
+    message: "this is an sms",
+    index: 0,
+    dateTimeSent: new Date().toISOString()
+  };
+  // NOTE: message from serialport-gsm:
+  //  {
+  //    sender: '<number>',
+  //    message: 'sbabha',
+  //    index: 0,
+  //    dateTimeSent: 2020-09-09T15:52:59.000Z,
+  //  }
+  //
+  const smsHandler = new SMSHandler({});
+  smsHandler.modem.getSimInbox = cb => cb({ data: [expected] });
+  smsHandler.modem.deleteMessage = (msg, cb) => {
+    t.deepEqual(expected, msg);
+    t.teardown(teardown);
+  };
+  smsHandler.receiveAll();
 });

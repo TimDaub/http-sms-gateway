@@ -67,8 +67,21 @@ const outgoing = {
   }
 };
 
+const incoming = {
+  store: function(msg) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    db.prepare(
+      `
+      INSERT INTO incoming (id, sender, text, dateTimeSent)
+      VALUES (@id, @sender, @message, @dateTimeSent)
+    `
+    ).run(msg);
+  }
+};
+
 module.exports = {
   init,
   dump,
-  outgoing
+  outgoing,
+  incoming
 };
