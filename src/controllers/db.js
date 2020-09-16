@@ -3,7 +3,6 @@ require("dotenv").config();
 const sqlite = require("better-sqlite3");
 const path = require("path");
 const { readFileSync, unlinkSync } = require("fs");
-const appDir = path.dirname(require.main.filename);
 
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 

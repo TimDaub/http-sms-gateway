@@ -12,9 +12,8 @@ function launch() {
     setInterval(sms.receiveAll, 1000);
   });
 
-  sms.on("progress", ({ id, response }) =>
-    outcoming.updateStatus(id, response)
-  );
+  sms.on("progress", ({ id, response }) => outgoing.updateStatus(id, response));
+  sms.on("error", ({ id, response }) => outgoing.updateStatus(id, response));
 
   sms.on("message", msg => {
     const id = uuidv4();

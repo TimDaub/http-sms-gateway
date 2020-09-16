@@ -69,4 +69,5 @@ class SMSHandler extends EventEmitter {
     });
   }
 }
+
 module.exports = SMSHandler;
