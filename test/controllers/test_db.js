@@ -94,7 +94,7 @@ test("if store stores incoming message", t => {
     id: "abc",
     sender: "1234",
     message: "hello",
-    dateTimeSent: new Date().toISOString()
+    dateTimeSent: new Date()
   };
 
   incoming.store(expected);

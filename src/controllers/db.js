@@ -70,6 +70,8 @@ const outgoing = {
 const incoming = {
   store: function(msg) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
+    // NOTE: SQLite cannot store datetime objects.
+    msg.dateTimeSent = msg.dateTimeSent.toISOString();
     db.prepare(
       `
       INSERT INTO incoming (id, sender, text, dateTimeSent)
