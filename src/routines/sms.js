@@ -2,7 +2,7 @@
 const { v4: uuidv4 } = require("uuid");
 
 const SMSHandler = require("../controllers/sms.js");
-const smsOptions = require("../options.js");
+const { sms: smsOptions } = require("../options.js");
 const { incoming, outgoing } = require("../controllers/db.js");
 
 function launch() {
