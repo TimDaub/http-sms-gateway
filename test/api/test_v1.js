@@ -23,7 +23,7 @@ const teardown = () => {
 
 test("if server responds with error if body is malformed", async t => {
   const req = await supertest(app)
-    .post("/api/v1/sms")
+    .post("/api/v1/outgoing")
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` });
   t.assert(req.status === 400);
 });
@@ -32,11 +32,11 @@ test("if server responds with id", async t => {
   init();
 
   const expected = {
-    receiver: "49152901820",
+    receiver: "+491795345170",
     text: "test"
   };
   const req = await supertest(app)
-    .post("/api/v1/sms")
+    .post("/api/v1/outgoing")
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send(expected);
   t.assert(req.status === 202);
@@ -52,7 +52,7 @@ test("if server rejects invalid values", async t => {
     text: "😋"
   };
   const req = await supertest(app)
-    .post("/api/v1/sms")
+    .post("/api/v1/outgoing")
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send(expected);
   t.assert(req.status === 400);
@@ -61,7 +61,7 @@ test("if server rejects invalid values", async t => {
 
 test("if server rejects request that is not authorized", async t => {
   const req = await supertest(app)
-    .post("/api/v1/sms")
+    .post("/api/v1/outgoing")
     .send({ hello: "world" });
   t.assert(req.status === 401);
 });
@@ -76,7 +76,7 @@ test("if server returns incoming sms filtered by sender", async t => {
   };
   incoming.store(expected);
   const req = await supertest(app)
-    .get(`/api/v1/sms?sender=${expected.sender}`)
+    .get(`/api/v1/incoming?sender=${expected.sender}`)
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send();
   t.assert(req.statusCode === 400);
@@ -87,20 +87,20 @@ test("if server sends filtered result for received messages", async t => {
   init();
   const expected = {
     id: "abc",
-    sender: "49152901820",
+    sender: "+491795345170",
     message: "hello",
     dateTimeSent: new Date()
   };
   const unexpected = {
     id: "cba",
-    sender: "49152901821",
+    sender: "+491601300531",
     message: "hello",
     dateTimeSent: new Date()
   };
   incoming.store(expected);
   incoming.store(unexpected);
   const req = await supertest(app)
-    .get(`/api/v1/sms?sender=${expected.sender}`)
+    .get(`/api/v1/incoming?sender=${encodeURIComponent(expected.sender)}`)
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send();
   t.assert(req.statusCode === 200);
