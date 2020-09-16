@@ -6,7 +6,7 @@ const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
 
-const { store } = require("../controllers/db.js");
+const { outgoing } = require("../controllers/db.js");
 
 const v1 = express.Router();
 
@@ -33,7 +33,7 @@ v1.post(
       status: "SCHEDULED"
     };
 
-    store(msg);
+    outgoing.store(msg);
     res.status(202).send({
       id,
       status: "SCHEDULED"

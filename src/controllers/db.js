@@ -1,3 +1,4 @@
+// @format
 require("dotenv").config();
 const sqlite = require("better-sqlite3");
 const path = require("path");
@@ -37,29 +38,37 @@ function init() {
   }
 }
 
-function store(msg) {
-  const db = sqlite(sqlConfig.path, sqlConfig.options);
-  return db
-    .prepare(
-      `
-  INSERT INTO outgoing (id, receiver, text, status)
-  VALUES (@id, @receiver, @text, @status)
-  `
-    )
-    .run(msg);
-}
+const outgoing = {
+  store: function(msg) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db
+      .prepare(
+        `
+    INSERT INTO outgoing (id, receiver, text, status)
+    VALUES (@id, @receiver, @text, @status)
+    `
+      )
+      .run(msg);
+  },
 
-function getAllMessages(_status) {
-  const db = sqlite(sqlConfig.path, sqlConfig.options);
-  return db.prepare("SELECT * FROM outgoing WHERE status = ?").all(_status)
-}
+  getAllMessages: function(_status) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db.prepare("SELECT * FROM outgoing WHERE status = ?").all(_status);
+  },
 
-function updateStatus(id, _status) {
-  const db = sqlite(sqlConfig.path, sqlConfig.options);
-  return db.prepare("UPDATE outgoing SET status = @_status WHERE id = @id").run({
-    id,
-    _status
-  })
-}
+  updateStatus: function(id, _status) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db
+      .prepare("UPDATE outgoing SET status = @_status WHERE id = @id")
+      .run({
+        id,
+        _status
+      });
+  }
+};
 
-module.exports = { init, store, dump, getAllMessages, updateStatus };
+module.exports = {
+  init,
+  dump,
+  outgoing
+};

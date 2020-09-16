@@ -2,7 +2,7 @@
 const { EventEmitter } = require("events");
 const serialportgsm = require("serialport-gsm");
 
-const { getAllMessages } = require("./db.js");
+const { outgoing } = require("./db.js");
 
 const { DEVICE_PATH } = process.env;
 
@@ -20,7 +20,7 @@ class SMSHandler extends EventEmitter {
   }
 
   sendAll() {
-    getAllMessages("SCHEDULED").forEach(this.send);
+    outgoing.getAllMessages("SCHEDULED").forEach(this.send);
   }
 
   receiveAll() {

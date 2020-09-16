@@ -6,12 +6,7 @@ const test = require("ava").serial;
 const { existsSync, unlinkSync } = require("fs");
 const sqlite = require("better-sqlite3");
 
-const {
-  init,
-  store,
-  getAllMessages,
-  updateStatus
-} = require(`${src}/controllers/db.js`);
+const { init, outgoing } = require(`${src}/controllers/db.js`);
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 
 const sqlConfig = {
@@ -54,7 +49,7 @@ test("if function stores data in sqlite database", t => {
     text: "hello",
     status: "SCHEDULED"
   };
-  store(expected);
+  outgoing.store(expected);
   const db = sqlite(sqlConfig.path, sqlConfig.options);
   const message = db
     .prepare(`SELECT * FROM outgoing WHERE id = ?`)
@@ -71,8 +66,8 @@ test("if function returns all message of a status", t => {
     text: "hello",
     status: "SCHEDULED"
   };
-  store(expected);
-  const [msg] = getAllMessages("SCHEDULED");
+  outgoing.store(expected);
+  const [msg] = outgoing.getAllMessages("SCHEDULED");
   t.deepEqual(expected, msg);
   t.teardown(teardown);
 });
@@ -85,10 +80,10 @@ test("if function updates status in db", t => {
     text: "hello",
     status: "SCHEDULED"
   };
-  store(expected);
+  outgoing.store(expected);
 
-  updateStatus(expected.id, "lol");
-  const [msg] = getAllMessages("lol");
+  outgoing.updateStatus(expected.id, "lol");
+  const [msg] = outgoing.getAllMessages("lol");
   t.deepEqual({ ...expected, status: "lol" }, msg);
   t.teardown(teardown);
 });

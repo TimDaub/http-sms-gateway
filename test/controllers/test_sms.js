@@ -2,7 +2,7 @@
 const test = require("ava").serial;
 
 const SMSHandler = require("../../src/controllers/sms.js");
-const { init, store, dump } = require("../../src/controllers/db.js");
+const { init, outgoing, dump } = require("../../src/controllers/db.js");
 
 const teardown = () => {
   dump();
@@ -57,8 +57,18 @@ test("if sms errors, error is sent", async t => {
 test("if messages from db get sent", async t => {
   init();
 
-  store({ id: "abc", receiver: "123", text: "ein test", status: "SCHEDULED" });
-  store({ id: "cba", receiver: "321", text: "tset nie", status: "SCHEDULED" });
+  outgoing.store({
+    id: "abc",
+    receiver: "123",
+    text: "ein test",
+    status: "SCHEDULED"
+  });
+  outgoing.store({
+    id: "cba",
+    receiver: "321",
+    text: "tset nie",
+    status: "SCHEDULED"
+  });
 
   const smsHandler = new SMSHandler({});
   smsHandler.modem.sendSMS = (receiver, text, alert, cb) =>
