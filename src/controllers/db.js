@@ -78,6 +78,11 @@ const incoming = {
       VALUES (@id, @sender, @message, @dateTimeSent)
     `
     ).run(msg);
+  },
+
+  list: function(sender) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db.prepare("SELECT * FROM incoming WHERE sender = ?").all(sender);
   }
 };
 

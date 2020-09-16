@@ -115,3 +115,34 @@ test("if store stores incoming message", t => {
   );
   t.teardown(teardown);
 });
+
+test("if list returns filtered list of incoming messages", t => {
+  init();
+  const expected = {
+    id: "abc",
+    sender: "1234",
+    message: "hello",
+    dateTimeSent: new Date()
+  };
+  const unexpected = {
+    id: "cba",
+    sender: "4321",
+    message: "hello",
+    dateTimeSent: new Date()
+  };
+  incoming.store(expected);
+  incoming.store(unexpected);
+  const msgs = incoming.list(expected.sender);
+  t.deepEqual(
+    [
+      {
+        id: expected.id,
+        sender: expected.sender,
+        text: expected.message,
+        dateTimeSent: expected.dateTimeSent
+      }
+    ],
+    msgs
+  );
+  t.teardown(teardown);
+});

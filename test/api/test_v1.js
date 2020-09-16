@@ -6,7 +6,7 @@ const supertest = require("supertest");
 const { unlinkSync } = require("fs");
 
 const app = require("../../src/server.js");
-const { init } = require(`../../src/controllers/db.js`);
+const { init, incoming } = require(`../../src/controllers/db.js`);
 
 const { DB_PATH, SQLITE_SCHEMA_PATH, BEARER_TOKEN } = process.env;
 const sqlConfig = {
@@ -64,4 +64,57 @@ test("if server rejects request that is not authorized", async t => {
     .post("/api/v1/sms")
     .send({ hello: "world" });
   t.assert(req.status === 401);
+});
+
+test("if server returns incoming sms filtered by sender", async t => {
+  init();
+  const expected = {
+    id: "abc",
+    sender: "1234",
+    message: "hello",
+    dateTimeSent: new Date()
+  };
+  incoming.store(expected);
+  const req = await supertest(app)
+    .get(`/api/v1/sms?sender=${expected.sender}`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send();
+  t.assert(req.statusCode === 400);
+  t.teardown(teardown);
+});
+
+test("if server sends filtered result for received messages", async t => {
+  init();
+  const expected = {
+    id: "abc",
+    sender: "49152901820",
+    message: "hello",
+    dateTimeSent: new Date()
+  };
+  const unexpected = {
+    id: "cba",
+    sender: "49152901821",
+    message: "hello",
+    dateTimeSent: new Date()
+  };
+  incoming.store(expected);
+  incoming.store(unexpected);
+  const req = await supertest(app)
+    .get(`/api/v1/sms?sender=${expected.sender}`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send();
+  t.assert(req.statusCode === 200);
+  t.deepEqual(
+    [
+      {
+        id: expected.id,
+        text: expected.message,
+        sender: expected.sender,
+        dateTimeSent: expected.dateTimeSent
+      }
+    ],
+    req.body
+  );
+
+  t.teardown(teardown);
 });

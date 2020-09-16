@@ -1,12 +1,12 @@
 // @format
 const express = require("express");
 const sqlite = require("better-sqlite3");
-const { body, validationResult } = require("express-validator");
+const { body, validationResult, query } = require("express-validator");
 const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
 
-const { outgoing } = require("../controllers/db.js");
+const { outgoing, incoming } = require("../controllers/db.js");
 
 const v1 = express.Router();
 
@@ -40,5 +40,14 @@ v1.post(
     });
   }
 );
+
+v1.get("/sms", query("sender").isMobilePhone(), (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(createError(400, "Malformed query parameters"), errors.array());
+  }
+  const messages = incoming.list(req.query.sender);
+  res.status(200).send(messages);
+});
 
 module.exports = v1;
