@@ -68,7 +68,7 @@ class SMSHandler extends EventEmitter {
       if (res.status === "success") {
         this.emit("progress", progress);
       } else {
-        logger.error("hit erorr when sending sms", progress, id);
+        logger.error("hit error when sending sms", progress, id);
         this.emit("error", progress);
       }
     });

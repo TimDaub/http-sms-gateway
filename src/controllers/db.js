@@ -43,12 +43,14 @@ function init() {
 const outgoing = {
   store: function(msg) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
+    msg.dateTimeCreated = new Date().toISOString();
+
     logger.info("Storing outgoing messages", msg);
     return db
       .prepare(
         `
-    INSERT INTO outgoing (id, receiver, text, status)
-    VALUES (@id, @receiver, @text, @status)
+    INSERT INTO outgoing (id, receiver, text, status, dateTimeCreated)
+    VALUES (@id, @receiver, @text, @status, @dateTimeCreated)
     `
       )
       .run(msg);
@@ -75,12 +77,14 @@ const incoming = {
   store: function(msg) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
     // NOTE: SQLite cannot store datetime objects.
+    msg.dateTimeCreated = new Date().toISOString();
     msg.dateTimeSent = msg.dateTimeSent.toISOString();
+
     logger.info("Storing incoming message", msg);
     db.prepare(
       `
-      INSERT INTO incoming (id, sender, text, dateTimeSent)
-      VALUES (@id, @sender, @message, @dateTimeSent)
+      INSERT INTO incoming (id, sender, text, dateTimeCreated, dateTimeSent)
+      VALUES (@id, @sender, @message, @dateTimeCreated, @dateTimeSent)
     `
     ).run(msg);
   },

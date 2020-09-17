@@ -104,15 +104,11 @@ test("if store stores incoming message", t => {
     .get(expected.id);
   // NOTE: serialport-gsm reports back with a property `message`, however our
   // property for the messages content is called `text`
-  t.deepEqual(
-    {
-      id: expected.id,
-      sender: expected.sender,
-      text: expected.message,
-      dateTimeSent: expected.dateTimeSent
-    },
-    message
-  );
+  t.assert(expected.id === message.id);
+  t.assert(expected.sender === message.sender);
+  t.assert(expected.message === message.text);
+  t.assert(expected.dateTimeSent === message.dateTimeSent);
+  t.assert(message.dateTimeCreated);
   t.teardown(teardown);
 });
 
@@ -133,16 +129,10 @@ test("if list returns filtered list of incoming messages", t => {
   incoming.store(expected);
   incoming.store(unexpected);
   const msgs = incoming.list(expected.sender);
-  t.deepEqual(
-    [
-      {
-        id: expected.id,
-        sender: expected.sender,
-        text: expected.message,
-        dateTimeSent: expected.dateTimeSent
-      }
-    ],
-    msgs
-  );
+  t.assert(expected.id === msgs[0].id);
+  t.assert(expected.sender === msgs[0].sender);
+  t.assert(expected.message === msgs[0].text);
+  t.assert(expected.dateTimeSent === msgs[0].dateTimeSent);
+  t.assert(msgs[0].dateTimeCreated);
   t.teardown(teardown);
 });

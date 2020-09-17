@@ -104,17 +104,10 @@ test("if server sends filtered result for received messages", async t => {
     .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
     .send();
   t.assert(req.statusCode === 200);
-  t.deepEqual(
-    [
-      {
-        id: expected.id,
-        text: expected.message,
-        sender: expected.sender,
-        dateTimeSent: expected.dateTimeSent
-      }
-    ],
-    req.body
-  );
-
+  t.assert(expected.id === req.body[0].id);
+  t.assert(expected.message === req.body[0].text);
+  t.assert(expected.sender === req.body[0].sender);
+  t.assert(expected.dateTimeSent === req.body[0].dateTimeSent);
+  t.assert(req.body[0].dateTimeCreated);
   t.teardown(teardown);
 });
