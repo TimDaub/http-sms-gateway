@@ -262,6 +262,7 @@ BEARER_TOKEN=abc
 DEVICE_PATH=/dev/ttyUSB0
 SIM_PIN=1234
 ENABLED_COUNTRIES="de-DE,de-AT"
+LOG_LEVEL=debug
 ```
 
 **NOTE:** `ENABLED_COUNTRIES` refers to the mobile phone numbers we allow the

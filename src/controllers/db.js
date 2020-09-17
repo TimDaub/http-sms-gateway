@@ -4,12 +4,15 @@ const sqlite = require("better-sqlite3");
 const path = require("path");
 const { readFileSync, unlinkSync } = require("fs");
 
+const logger = require("../logger.js");
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 
 const sqlConfig = {
   path: path.resolve(__dirname, `../../${DB_PATH}`),
   schema: path.resolve(__dirname, `../../${SQLITE_SCHEMA_PATH}`),
   options: {
+    // NOTE: When trying to use the dedicated logger here, errors are thrown
+    // when trying to write data into the SQL DB.
     verbose: console.info
   }
 };
@@ -23,16 +26,16 @@ function init() {
   const schema = readFileSync(sqlConfig.schema).toString();
 
   try {
-    console.info(`Trying to initialize database at path: ${sqlConfig.path}`);
+    logger.info(`Trying to initialize database at path: ${sqlConfig.path}`);
     db.exec(schema);
   } catch (err) {
     if (
       err instanceof sqlite.SqliteError &&
       new RegExp(".*table.*already exists").test(err.message)
     ) {
-      console.info("Skipping database initialization; already exists");
+      logger.info("Skipping database initialization; already exists");
     } else {
-      console.error(err);
+      logger.error(err);
     }
   }
 }
@@ -40,6 +43,7 @@ function init() {
 const outgoing = {
   store: function(msg) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
+    logger.info("Storing outgoing messages", msg);
     return db
       .prepare(
         `
@@ -57,6 +61,7 @@ const outgoing = {
 
   updateStatus: function(id, _status) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
+    logger.info("Updating outgoing message status", id, _status);
     return db
       .prepare("UPDATE outgoing SET status = @_status WHERE id = @id")
       .run({
@@ -71,6 +76,7 @@ const incoming = {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
     // NOTE: SQLite cannot store datetime objects.
     msg.dateTimeSent = msg.dateTimeSent.toISOString();
+    logger.info("Storing incoming message", msg);
     db.prepare(
       `
       INSERT INTO incoming (id, sender, text, dateTimeSent)

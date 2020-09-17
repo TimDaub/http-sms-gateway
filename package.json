@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "ava --serial",
-    "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js'",
+    "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js | ./node_modules/.bin/pino-pretty --translateTime'",
     "init": "node ./scripts/init.js",
     "production": "NODE_ENV='production' forever start src/server.js"
   },
@@ -33,10 +33,12 @@
     "dotenv": "8.2.0",
     "express": "4.17.1",
     "express-bearer-token": "2.4.0",
+    "express-pino-logger": "5.0.0",
     "express-validator": "6.6.1",
     "http-errors": "1.8.0",
     "isgsm7": "0.1.0",
     "nodemon": "2.0.4",
+    "pino": "6.6.1",
     "serialport-gsm": "3.3.1",
     "uuid": "8.3.0",
     "wtfnode": "0.8.2"
@@ -44,6 +46,7 @@
   "devDependencies": {
     "ava": "3.12.1",
     "forever": "3.0.2",
+    "pino-pretty": "4.2.1",
     "supertest": "4.0.2"
   }
 }

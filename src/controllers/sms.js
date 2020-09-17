@@ -2,6 +2,7 @@
 const { EventEmitter } = require("events");
 const serialportgsm = require("serialport-gsm");
 
+const logger = require("../logger.js");
 const { outgoing } = require("./db.js");
 
 const { DEVICE_PATH } = process.env;
@@ -26,7 +27,7 @@ class SMSHandler extends EventEmitter {
   receiveAll() {
     this.modem.getSimInbox((inbox, err) => {
       if (err) {
-        console.error(err);
+        logger.error("Hit an error when getting sim inbox", err);
         this.emit("error", err);
       }
       if (inbox && inbox.data && inbox.data.length === 0) {
@@ -46,7 +47,11 @@ class SMSHandler extends EventEmitter {
       messages.forEach(message => {
         this.modem.deleteMessage(message, (msg, err) => {
           if (err) {
-            console.error(err);
+            logger.error(
+              "hit error when trying to delete message",
+              err,
+              message
+            );
             this.emit("error", err);
           }
 
@@ -63,7 +68,7 @@ class SMSHandler extends EventEmitter {
       if (res.status === "success") {
         this.emit("progress", progress);
       } else {
-        console.error(progress);
+        logger.error("hit erorr when sending sms", progress, id);
         this.emit("error", progress);
       }
     });

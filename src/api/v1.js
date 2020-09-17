@@ -6,10 +6,11 @@ const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
 
+const logger = require("../logger.js");
 const { outgoing, incoming } = require("../controllers/db.js");
 let { ENABLED_COUNTRIES } = process.env;
 ENABLED_COUNTRIES = ENABLED_COUNTRIES.split(",");
-console.info(
+logger.info(
   `Following countries are enabled for receiving/sending SMS: ${ENABLED_COUNTRIES.join(
     ","
   )}`
@@ -29,6 +30,7 @@ v1.post(
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      logger.error("Body is malformed", errors.array());
       return next(createError(400, "Body is malformed"), errors.array());
     }
 
