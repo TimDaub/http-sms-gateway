@@ -6,7 +6,12 @@ const test = require("ava").serial;
 const { existsSync, unlinkSync } = require("fs");
 const sqlite = require("better-sqlite3");
 
-const { init, outgoing, incoming } = require(`${src}/controllers/db.js`);
+const {
+  init,
+  outgoing,
+  incoming,
+  webhooks
+} = require(`${src}/controllers/db.js`);
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 
 const sqlConfig = {
@@ -134,5 +139,22 @@ test("if list returns filtered list of incoming messages", t => {
   t.assert(expected.message === msgs[0].text);
   t.assert(expected.dateTimeSent === msgs[0].dateTimeSent);
   t.assert(msgs[0].dateTimeCreated);
+  t.teardown(teardown);
+});
+
+test("if webhooks store creates data in database", t => {
+  init();
+  const expected = {
+    id: "abc",
+    url: "http://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const webhook = db
+    .prepare(`SELECT * FROM webhooks WHERE id = ?`)
+    .get(expected.id);
+  t.deepEqual(expected, webhook);
   t.teardown(teardown);
 });

@@ -45,7 +45,7 @@ const outgoing = {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
     msg.dateTimeCreated = new Date().toISOString();
 
-    logger.info("Storing outgoing messages", msg);
+    logger.info(`Storing outgoing message ${JSON.stringify(msg)}`);
     return db
       .prepare(
         `
@@ -63,7 +63,7 @@ const outgoing = {
 
   updateStatus: function(id, _status) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
-    logger.info("Updating outgoing message status", id, _status);
+    logger.info(`Updating outgoing message status ${id} ${_status}`);
     return db
       .prepare("UPDATE outgoing SET status = @_status WHERE id = @id")
       .run({
@@ -80,13 +80,15 @@ const incoming = {
     msg.dateTimeCreated = new Date().toISOString();
     msg.dateTimeSent = msg.dateTimeSent.toISOString();
 
-    logger.info("Storing incoming message", msg);
-    db.prepare(
-      `
+    logger.info(`Storing incoming message ${JSON.stringify(msg)}`);
+    return db
+      .prepare(
+        `
       INSERT INTO incoming (id, sender, text, dateTimeCreated, dateTimeSent)
       VALUES (@id, @sender, @message, @dateTimeCreated, @dateTimeSent)
     `
-    ).run(msg);
+      )
+      .run(msg);
   },
 
   list: function(sender) {
@@ -95,9 +97,25 @@ const incoming = {
   }
 };
 
+const webhooks = {
+  store: function(webhook) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    logger.info(`Storing webhook ${JSON.stringify(webhook)}`);
+    return db
+      .prepare(
+        `
+      INSERT INTO webhooks (id, url, secret, event)
+      VALUES (@id, @url, @secret, @event)
+    `
+      )
+      .run(webhook);
+  }
+};
+
 module.exports = {
   init,
   dump,
   outgoing,
-  incoming
+  incoming,
+  webhooks
 };

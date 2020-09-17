@@ -13,3 +13,10 @@ CREATE TABLE incoming (
   dateTimeCreated TEXT NOT NULL,
   dateTimeSent TEXT NOT NULL
 );
+
+CREATE TABLE webhooks (
+  id TEXT NOT NULL PRIMARY KEY,
+  url TEXT NOT NULL,
+  secret TEXT NOT NULL,
+  event TEXT NOT NULL
+);

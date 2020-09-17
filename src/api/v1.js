@@ -7,7 +7,7 @@ const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
 
 const logger = require("../logger.js");
-const { outgoing, incoming } = require("../controllers/db.js");
+const { outgoing, incoming, webhooks } = require("../controllers/db.js");
 let { ENABLED_COUNTRIES } = process.env;
 ENABLED_COUNTRIES = ENABLED_COUNTRIES.split(",");
 logger.info(
@@ -66,6 +66,32 @@ v1.get(
     }
     const messages = incoming.list(req.query.sender);
     res.status(200).send(messages);
+  }
+);
+
+const possibleEvents = ["incomingMessage"];
+
+v1.post(
+  "/webhooks",
+  body("url").isURL({ protocols: ["http", "https"] }),
+  body("secret").isLength({ min: 10, max: 64 }),
+  body("event").isIn(possibleEvents),
+  (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      logger.error("Body is malformed", errors.array());
+      return next(createError(400, "Body is malformed"), errors.array());
+    }
+
+    const webhook = {
+      id: uuidv4(),
+      url: req.body.url,
+      secret: req.body.secret,
+      event: req.body.event
+    };
+
+    webhooks.store(webhook);
+    res.status(201).send(webhook);
   }
 );
 

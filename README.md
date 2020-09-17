@@ -27,6 +27,27 @@ $ curl -H "Authorization: Bearer <token>" \
 []
 ```
 
+### `POST /webhooks`
+
+```bash
+$ curl -d '{"url": "https://example.com", "secret": "aaaaaaaaaa", "event": "incomingMessage"}' \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <token>' \
+  -X POST http://localhost:5000/api/v1/webhooks
+{"id":"f4850f75-5080-48a8-a81a-2d8f7cf6a57a","url":"https://example.com","secret":"aaaaaaaaaa","event":"incomingMessage"}
+```
+
+**NOTES:** 
+
+- `secret`'s length needs to be between 10 and 64 characters.
+- `event` can currently only be the string `incomingMessage`, being the event a
+  new SMS is received.
+
+## References
+
+- I was inspired by [GitHub's webhook
+  implementation](https://developer.github.com/v3/repos/hooks/).
+
 ## Copyright notice
 
 © 2020, Tim Daubenschütz. All rights reserved.

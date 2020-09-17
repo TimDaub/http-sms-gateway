@@ -4,6 +4,7 @@ require("dotenv").config({ path: path.resolve(__dirname, `../../.env`) });
 const test = require("ava").serial;
 const supertest = require("supertest");
 const { unlinkSync } = require("fs");
+const sqlite = require("better-sqlite3");
 
 const app = require("../../src/server.js");
 const { init, incoming } = require(`../../src/controllers/db.js`);
@@ -109,5 +110,114 @@ test("if server sends filtered result for received messages", async t => {
   t.assert(expected.sender === req.body[0].sender);
   t.assert(expected.dateTimeSent === req.body[0].dateTimeSent);
   t.assert(req.body[0].dateTimeCreated);
+  t.teardown(teardown);
+});
+
+test("if server passes valid webhook creation request", async t => {
+  init();
+
+  let webhook = {
+    // NOTE: Testing http
+    url: "http://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+
+  let req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 201);
+
+  webhook = {
+    // NOTE: Testing https
+    url: "https://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+
+  req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 201);
+  t.teardown(teardown);
+});
+
+test("if server passes an invalid webhook creation request", async t => {
+  init();
+
+  let webhook = {
+    url: "http://example.com",
+    // NOTE: `secret` needs to be at least of length 10
+    secret: "aaaaaaaaa",
+    event: "incomingMessage"
+  };
+
+  let req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 400);
+
+  webhook = {
+    // NOTE: `url` needs to be a valid http or https URL
+    url: "ftp://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+
+  req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 400);
+
+  webhook = {
+    url: "http://example.com",
+    secret: "aaaaaaaaaa",
+    // NOTE: `event` needs to be exactly the name of an implemented event
+    event: "something random"
+  };
+
+  req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 400);
+  t.teardown(teardown);
+});
+
+test("if server passes valid webhook creation request and stores it in db", async t => {
+  init();
+
+  const webhook = {
+    url: "https://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+
+  const req = await supertest(app)
+    .post(`/api/v1/webhooks`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(webhook);
+
+  t.assert(req.statusCode === 201);
+  t.assert(req.body.id);
+
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const dbWebhook = db
+    .prepare(`SELECT * FROM webhooks WHERE id = ?`)
+    .get(req.body.id);
+
+  t.assert(dbWebhook.url === webhook.url);
+  t.assert(dbWebhook.secret === webhook.secret);
+  t.assert(dbWebhook.event === webhook.event);
+  t.assert(dbWebhook.id);
   t.teardown(teardown);
 });
