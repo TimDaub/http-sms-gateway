@@ -7,7 +7,7 @@ CREATE TABLE outgoing (
 );
 
 CREATE TABLE incoming (
-  id TEXT NOT NULL PRIMARY KEY,
+  id TEXT NOT NULL PRIMARY KEY UNIQUE,
   sender TEXT NOT NULL,
   text TEXT NOT NULL,
   dateTimeCreated TEXT NOT NULL,
