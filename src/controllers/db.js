@@ -61,6 +61,19 @@ const outgoing = {
     return db.prepare("SELECT * FROM outgoing WHERE status = ?").all(_status);
   },
 
+  popAllMessages: function(_status) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+
+    const msgs = db.transaction(() => {
+      const msgs = db
+        .prepare("SELECT * FROM outgoing WHERE status = ?")
+        .all(_status);
+      db.prepare("UPDATE outgoing SET status = ?").run("PROCESSING");
+      return msgs;
+    })();
+    return msgs;
+  },
+
   updateStatus: function(id, _status) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
     logger.info(`Updating outgoing message status ${id} ${_status}`);

@@ -1,5 +1,7 @@
 // @format
 const test = require("ava").serial;
+const sinon = require("sinon");
+const { once } = require("events");
 
 const SMSHandler = require("../../src/controllers/sms.js");
 const { init, outgoing, dump } = require("../../src/controllers/db.js");
@@ -110,4 +112,54 @@ test("if incoming message is stored in db and deleted from sim", async t => {
     t.teardown(teardown);
   };
   smsHandler.receiveAll();
+});
+
+test("if currently processed messages are locked to avoid duplicate processing", async t => {
+  init();
+  let smsHandler;
+
+  try {
+    smsHandler = new SMSHandler({});
+  } catch (err) {
+    // NOTE: We assume a throw here as tests shouldn't require a live device.
+  }
+  const expected = [
+    {
+      id: "abc",
+      receiver: "123",
+      text: "ein test",
+      status: "SCHEDULED"
+    },
+    {
+      id: "cba",
+      receiver: "321",
+      text: "tset nie",
+      status: "SCHEDULED"
+    }
+  ];
+
+  outgoing.store(expected[0]);
+  outgoing.store(expected[1]);
+
+  const sendSMS = sinon.fake(async (receiver, text, alert, cb) => {
+    // NOTE: Sending SMS takes 2 seconds
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log("resolving 2 second delayed sendSMS call.");
+    cb({ status: "success", data: { response: "message sent successfully" } });
+  });
+  smsHandler.modem.sendSMS = sendSMS;
+
+  // NOTE: We only wait 1 second between both `sendAll`
+  const interval = setInterval(smsHandler.sendAll, 1000);
+  // NOTE: First interval should take 2 secs to complete
+  //       Second interval, sms from first shouldn't appear anymore
+  //       We should wait at least a total of 4 seconds for everything to
+  //       complete
+  await new Promise(resolve => setTimeout(resolve, 4000));
+  clearInterval(interval);
+  t.assert(sendSMS.getCall(0).args[0] === expected[0].receiver);
+  t.assert(sendSMS.getCall(1).args[0] === expected[1].receiver);
+  t.assert(sendSMS.callCount === 2);
+
+  t.teardown(teardown);
 });

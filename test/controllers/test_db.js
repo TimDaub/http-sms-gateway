@@ -158,3 +158,28 @@ test("if webhooks store creates data in database", t => {
   t.deepEqual(expected, webhook);
   t.teardown(teardown);
 });
+test("if messages are indeed popped when popAllMessages is called", t => {
+  init();
+  const expected = [
+    {
+      id: "abc",
+      receiver: "1234",
+      text: "hello",
+      status: "SCHEDULED"
+    },
+    {
+      id: "cba",
+      receiver: "4321",
+      text: "olleh",
+      status: "SCHEDULED"
+    }
+  ];
+  outgoing.store(expected[0]);
+  outgoing.store(expected[1]);
+
+  const messages = outgoing.popAllMessages("SCHEDULED");
+  t.assert(messages.length === 2);
+  const expectedEmpty = outgoing.getAllMessages("SCHEDULED");
+  t.assert(expectedEmpty.length === 0);
+  t.teardown(teardown);
+});

@@ -1,6 +1,7 @@
 //@format
 const { EventEmitter } = require("events");
 const serialportgsm = require("serialport-gsm");
+const { existsSync } = require("fs");
 
 const logger = require("../logger.js");
 const { outgoing } = require("./db.js");
@@ -12,16 +13,21 @@ class SMSHandler extends EventEmitter {
     super();
 
     this.modem = serialportgsm.Modem();
-    this.modem.open(DEVICE_PATH, options);
-    this.modem.on("open", () => this.emit("open"));
-
     this.sendAll = this.sendAll.bind(this);
     this.send = this.send.bind(this);
     this.receiveAll = this.receiveAll.bind(this);
+
+    if (existsSync(DEVICE_PATH)) {
+      this.modem.open(DEVICE_PATH, options);
+      this.modem.on("open", () => this.emit("open"));
+    } else {
+      logger.warn(new Error(`GSM device not found at path: ${DEVICE_PATH}`));
+      logger.info("Continuing program execution without GSM device");
+    }
   }
 
   sendAll() {
-    outgoing.getAllMessages("SCHEDULED").forEach(this.send);
+    outgoing.popAllMessages("SCHEDULED").forEach(this.send);
   }
 
   receiveAll() {
