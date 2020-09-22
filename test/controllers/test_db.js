@@ -10,7 +10,8 @@ const {
   init,
   outgoing,
   incoming,
-  webhooks
+  webhooks,
+  events
 } = require(`${src}/controllers/db.js`);
 const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
 
@@ -158,6 +159,24 @@ test("if webhooks store creates data in database", t => {
   t.deepEqual(expected, webhook);
   t.teardown(teardown);
 });
+
+test("if event store creates data in database", t => {
+  init();
+  const expected = {
+    id: "abc",
+    name: "incomingMessage",
+    message: '{"hello": "world"}'
+  };
+  events.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const evt = db.prepare(`SELECT * FROM events WHERE id = ?`).get(expected.id);
+  t.assert(expected.id === evt.id);
+  t.assert(expected.name === evt.name);
+  t.assert(expected.message === evt.message);
+  t.assert(evt.dateTimeCreated);
+  t.teardown(teardown);
+});
+
 test("if messages are indeed popped when popAllMessages is called", t => {
   init();
   const expected = [

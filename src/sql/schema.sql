@@ -20,3 +20,10 @@ CREATE TABLE webhooks (
   secret TEXT NOT NULL,
   event TEXT NOT NULL
 );
+
+CREATE TABLE events (
+  id TEXT NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  message TEXT NOT NULL,
+  dateTimeCreated TEXT NOT NULL
+);

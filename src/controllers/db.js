@@ -125,10 +125,29 @@ const webhooks = {
   }
 };
 
+const events = {
+  store: function(evt) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    const dateTimeCreated = new Date().toISOString();
+    evt = { ...evt, dateTimeCreated };
+
+    logger.info(`Storing event ${JSON.stringify(evt)}`);
+    return db
+      .prepare(
+        `
+      INSERT INTO events (id, name, message, dateTimeCreated)
+      VALUES (@id, @name, @message, @dateTimeCreated)
+      `
+      )
+      .run(evt);
+  }
+};
+
 module.exports = {
   init,
   dump,
   outgoing,
   incoming,
-  webhooks
+  webhooks,
+  events
 };

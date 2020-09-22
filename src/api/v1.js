@@ -6,6 +6,7 @@ const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
 
+const { possibleEvents } = require("../constants.js");
 const logger = require("../logger.js");
 const { outgoing, incoming, webhooks } = require("../controllers/db.js");
 let { ENABLED_COUNTRIES } = process.env;
@@ -68,8 +69,6 @@ v1.get(
     res.status(200).send(messages);
   }
 );
-
-const possibleEvents = ["incomingMessage"];
 
 v1.post(
   "/webhooks",

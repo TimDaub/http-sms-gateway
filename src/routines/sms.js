@@ -6,6 +6,7 @@ const logger = require("../logger.js");
 const SMSHandler = require("../controllers/sms.js");
 const { sms: smsOptions } = require("../options.js");
 const { incoming, outgoing } = require("../controllers/db.js");
+const WebhookHandler = require("../controllers/webhooks.js");
 
 function storeWithId(msg) {
   // NOTE: By using content-addressed identification, we make sure to not
@@ -17,24 +18,28 @@ function storeWithId(msg) {
     .createHash("sha256")
     .update(content)
     .digest("hex");
-  console.log(id);
+  msg = { ...msg, id };
 
   try {
-    incoming.store({ ...msg, id });
+    incoming.store(msg);
   } catch (err) {
     if (
       err instanceof SqliteError &&
       err.message.includes("UNIQUE constraint failed")
     ) {
       logger.warn(`Skipping to store message with id (duplicate): ${id}`);
+      return;
     } else {
       throw err;
     }
   }
+  const webhooks = new WebhookHandler();
+  webhooks.addEvent("incomingMessage", msg);
 }
 
 function launch() {
   const sms = new SMSHandler(smsOptions);
+
   sms.on("open", () => {
     setInterval(sms.sendAll, 1000);
     setInterval(sms.receiveAll, 1000);
