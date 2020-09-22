@@ -1,7 +1,10 @@
 // @format
 const { EventEmitter } = require("events");
 const { v4: uuidv4 } = require("uuid");
+const fetch = require("cross-fetch");
+const crypto = require("crypto");
 
+const logger = require("../logger.js");
 const db = require("./db.js");
 const { possibleEvents } = require("../constants.js");
 
@@ -15,7 +18,6 @@ class WebhookHandler extends EventEmitter {
   }
 
   addEvent(name, msg) {
-    console.log("bla");
     if (!possibleEvents.includes(name)) {
       throw new Error(
         `parameter 'name' (${name}) needs to be one of: ${possibleEvents.join(
@@ -39,12 +41,32 @@ class WebhookHandler extends EventEmitter {
       );
   }
 
-  sendAll() {
+  async sendAll() {
     db.events.decayedList().map(this.send);
   }
 
-  send(evt) {
-    console.log(evt);
+  async send(evt) {
+    const sig = crypto
+      .createHmac("sha256", evt.secret)
+      .update(evt.message)
+      .digest("hex");
+
+    const res = await fetch(evt.url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-SMS-GATEWAY-Signature": sig
+      },
+      body: evt.message
+    });
+
+    if (res.status === 200) {
+      logger.info(`Successful webhook delivery for event with id: ${evt.id}`);
+      db.events.remove(evt.id);
+    } else {
+      logger.info(`Failed webhook delivery for event with id: ${evt.id}`);
+      db.events.updateTrys(evt.id);
+    }
   }
 }
 

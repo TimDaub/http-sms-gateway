@@ -397,3 +397,67 @@ test("if db ctrl returns all webhooks of a specific event", t => {
 
   t.teardown(teardown);
 });
+
+test("if db deletes event with id", t => {
+  init();
+  const wh = {
+    id: "abc",
+    url: "http://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(wh);
+  const expected = {
+    id: "abc",
+    name: "incomingMessage",
+    message: '{"hello": "world"}',
+    trys: 0,
+    lastTry: new Date().toISOString(),
+    webhookId: wh.id
+  };
+  events.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const evt = db.prepare(`SELECT * FROM events WHERE id = ?`).get(expected.id);
+
+  events.remove(expected.id);
+  const empty = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(!empty);
+
+  t.teardown(teardown);
+});
+
+test("if for an event, trys are updated", t => {
+  init();
+  const wh = {
+    id: "abc",
+    url: "http://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(wh);
+  const expected = {
+    id: "abc",
+    name: "incomingMessage",
+    message: '{"hello": "world"}',
+    trys: 0,
+    lastTry: new Date().toISOString(),
+    webhookId: wh.id
+  };
+  events.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const evt = db.prepare(`SELECT * FROM events WHERE id = ?`).get(expected.id);
+
+  events.updateTrys(evt.id);
+  const updatedEvt = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(expected.trys + 1 === updatedEvt.trys);
+  t.assert(
+    new Date(expected.lastTry).getTime() <
+      new Date(updatedEvt.lastTry).getTime()
+  );
+
+  t.teardown(teardown);
+});

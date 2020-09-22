@@ -188,6 +188,29 @@ const events = {
         `
       )
       .all();
+  },
+  remove(id) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db.prepare("DELETE FROM events WHERE id = ?").run(id);
+  },
+  updateTrys(id) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    const lastTry = new Date().toISOString();
+    const res = db
+      .prepare(
+        `
+      UPDATE events
+      SET trys = trys + 1, lastTry = @lastTry
+      WHERE id = @id
+    `
+      )
+      .run({ id, lastTry });
+
+    if (res.changes !== 1) {
+      throw new Error(
+        "When trying to update event's trys, nothing was updated"
+      );
+    }
   }
 };
 

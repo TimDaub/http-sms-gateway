@@ -32,6 +32,7 @@
   "dependencies": {
     "better-sqlite3": "7.1.0",
     "compression": "1.7.4",
+    "cross-fetch": "3.0.6",
     "date-fns": "2.16.1",
     "dotenv": "8.2.0",
     "express": "4.17.1",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "ava": "3.12.1",
+    "expressively-mocked-fetch": "0.1.1",
     "forever": "3.0.2",
     "pino-pretty": "4.2.1",
     "sinon": "9.0.3",
