@@ -25,5 +25,11 @@ CREATE TABLE events (
   id TEXT NOT NULL PRIMARY KEY,
   name TEXT NOT NULL,
   message TEXT NOT NULL,
-  dateTimeCreated TEXT NOT NULL
+  dateTimeCreated TEXT NOT NULL,
+  trys INT NOT NULL,
+  lastTry TEXT NOT NULL,
+  webhookId TEXT NOT NULL,
+  FOREIGN KEY(webhookId) REFERENCES webhooks(id) ON DELETE CASCADE
 );
+
+PRAGMA foreign_keys = ON;

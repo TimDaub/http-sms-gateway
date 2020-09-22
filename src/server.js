@@ -9,6 +9,7 @@ const expressPino = require("express-pino-logger");
 const logger = require("./logger.js");
 const apiV1 = require("./api/v1.js");
 const smsRoutine = require("./routines/sms.js");
+const WebhookHandler = require("./controllers/webhooks.js");
 
 const { NODE_ENV, SERVER_PORT, BEARER_TOKEN } = process.env;
 const app = express();
@@ -31,6 +32,9 @@ app.use(compression());
 
 if (NODE_ENV !== "test") {
   smsRoutine.launch();
+
+  const webhooks = new WebhookHandler();
+  setInterval(webhooks.sendAll, 1000);
 }
 
 app.listen(SERVER_PORT, () => {

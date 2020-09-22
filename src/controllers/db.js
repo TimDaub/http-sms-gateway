@@ -122,6 +122,10 @@ const webhooks = {
     `
       )
       .run(webhook);
+  },
+  list: function(evt) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db.prepare("SELECT * FROM webhooks WHERE event = ?").all(evt);
   }
 };
 
@@ -135,11 +139,55 @@ const events = {
     return db
       .prepare(
         `
-      INSERT INTO events (id, name, message, dateTimeCreated)
-      VALUES (@id, @name, @message, @dateTimeCreated)
+      INSERT INTO events (
+        id,
+        name,
+        message,
+        dateTimeCreated,
+        trys,
+        lastTry,
+        webhookId
+      ) VALUES (
+        @id,
+        @name,
+        @message,
+        @dateTimeCreated,
+        @trys,
+        @lastTry,
+        @webhookId
+      )
       `
       )
       .run(evt);
+  },
+  decayedList: function() {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    // NOTE: We join the list of events with the webhooks table
+    return db
+      .prepare(
+        `
+          SELECT
+            events.id,
+            events.name,
+            events.message,
+            events.dateTimeCreated,
+            events.trys,
+            events.lastTry,
+            webhooks.url,
+            webhooks.secret,
+            webhooks.event
+          FROM events INNER JOIN webhooks
+          ON events.webhookId = webhooks.id
+          WHERE
+            dateTime(events.lastTry) <= datetime(
+              'now',
+              printf('-%d minutes', 1 << events.trys)
+            )
+            AND events.trys < 12
+            OR events.trys == 0
+        `
+      )
+      .all();
   }
 };
 
