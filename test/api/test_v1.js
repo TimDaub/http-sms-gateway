@@ -5,9 +5,10 @@ const test = require("ava").serial;
 const supertest = require("supertest");
 const { unlinkSync } = require("fs");
 const sqlite = require("better-sqlite3");
+const { v4: uuidv4 } = require("uuid");
 
 const app = require("../../src/server.js");
-const { init, incoming } = require(`../../src/controllers/db.js`);
+const { init, incoming, webhooks } = require(`../../src/controllers/db.js`);
 
 const { DB_PATH, SQLITE_SCHEMA_PATH, BEARER_TOKEN } = process.env;
 const sqlConfig = {
@@ -219,5 +220,29 @@ test("if server passes valid webhook creation request and stores it in db", asyn
   t.assert(dbWebhook.secret === webhook.secret);
   t.assert(dbWebhook.event === webhook.event);
   t.assert(dbWebhook.id);
+  t.teardown(teardown);
+});
+
+test("if delete request deletes events and webhook", async t => {
+  init();
+  const webhook = {
+    id: uuidv4(),
+    url: "https://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(webhook);
+
+  const req = await supertest(app)
+    .del(`/api/v1/webhooks/${webhook.id}`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send();
+  t.assert(req.statusCode === 200);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const dbWebhook = db
+    .prepare(`SELECT * FROM webhooks WHERE id = ?`)
+    .get(webhook.id);
+  t.assert(!dbWebhook);
+
   t.teardown(teardown);
 });

@@ -27,6 +27,13 @@ $ curl -H "Authorization: Bearer <token>" \
 []
 ```
 
+### `GET /webhooks/:id`
+
+```bash
+$ curl -X DELETE -H "Authorization: Bearer <token>" \
+  http://localhost:5000/api/v1/webhooks/f4850f75-5080-48a8-a81a-2d8f7cf6a57a
+```
+
 ### `POST /webhooks`
 
 ```bash

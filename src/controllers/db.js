@@ -123,6 +123,10 @@ const webhooks = {
       )
       .run(webhook);
   },
+  remove(id) {
+    const db = sqlite(sqlConfig.path, sqlConfig.options);
+    return db.prepare("DELETE FROM webhooks WHERE id = ?").run(id);
+  },
   list: function(evt) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
     return db.prepare("SELECT * FROM webhooks WHERE event = ?").all(evt);

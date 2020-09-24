@@ -1,7 +1,7 @@
 // @format
 const express = require("express");
 const sqlite = require("better-sqlite3");
-const { body, validationResult, query } = require("express-validator");
+const { body, validationResult, query, param } = require("express-validator");
 const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
@@ -69,6 +69,11 @@ v1.get(
     res.status(200).send(messages);
   }
 );
+
+v1.delete("/webhooks/:id", param("id").isUUID(), (req, res, next) => {
+  webhooks.remove(req.params.id);
+  res.status(200).send();
+});
 
 v1.post(
   "/webhooks",
