@@ -51,14 +51,25 @@ class WebhookHandler extends EventEmitter {
       .update(evt.message)
       .digest("hex");
 
-    const res = await fetch(evt.url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-SMS-GATEWAY-Signature": sig
-      },
-      body: evt.message
-    });
+    let res, error;
+    try {
+      res = await fetch(evt.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-SMS-GATEWAY-Signature": sig
+        },
+        body: evt.message
+      });
+    } catch (err) {
+      logger.error(
+        `Hit error when delivering webhook with id: ${evt.id} and error msg: ${
+          err.message
+        }`
+      );
+      db.events.updateTrys(evt.id);
+      return;
+    }
 
     if (res.status === 200) {
       logger.info(`Successful webhook delivery for event with id: ${evt.id}`);

@@ -161,3 +161,46 @@ test("if trys are updated on unsuccessful webhook delivery", async t => {
 
   t.teardown(teardown);
 });
+
+test("delivering a webhook when the receiving server is down", async t => {
+  init();
+  const wh = {
+    id: "abc",
+    url: "http://1234surelydoesntexist.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(wh);
+  const expected = {
+    id: "abc",
+    name: "incomingMessage",
+    message: '{"hello":"world"}',
+    trys: 0,
+    lastTry: new Date().toISOString(),
+    webhookId: wh.id
+  };
+  events.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const dbEvt = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(dbEvt);
+
+  const whHandler = new WebhookHandler();
+  await whHandler.send({
+    ...expected,
+    secret: wh.secret,
+    event: wh.event,
+    url: wh.url
+  });
+
+  const updatedEvt = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(updatedEvt.trys === 1);
+  t.assert(updatedEvt.lastTry !== expected.lastTry);
+
+  t.teardown(teardown);
+});
+
+// TODO: Check if exception is caught when server is offline
