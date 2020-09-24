@@ -42,7 +42,8 @@ received.  Using the `secret` parameter, you can make sure that you're truly
 receiving messages from the gateway. It's using a
 [HMAC](https://en.wikipedia.org/wiki/HMAC). Check the HMAC's
 [implementation](https://github.com/TimDaub/http-sms-gateway/blob/d7070f4ad6e56a60a7265f1db0461d747f76022d/src/controllers/webhooks.js#L49-L52)
-to copy it on your server.
+to copy it on your server. It may make sense comparing the HMACs with node's
+[`crypto.timingSafeEqual`](https://nodejs.org/api/crypto.html#crypto_crypto_timingsafeequal_a_b).
 
 Lastly, a word on an event's delivery: The gateway will try to deliver an event
 as fast as possible. In cases your server is down or doesn't respond with a
