@@ -1,0 +1,23 @@
+{
+  "name": "http-sms-gateway-client",
+  "version": "0.0.1",
+  "description": "A client for the http-sms-gateway.",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TimDaub/http-sms-gateway/client"
+  },
+  "keywords": [
+    "client",
+    "sms",
+    "http",
+    "rest"
+  ],
+  "author": "Tim Daubenschütz <tim@daubenschuetz.de> (https://timdaub.github.io)",
+  "devDependencies": {
+    "ava": "3.12.1"
+  }
+}

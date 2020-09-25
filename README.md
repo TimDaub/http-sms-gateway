@@ -8,6 +8,9 @@ See [setup.md](./docs/setup.md).
 
 ## Usage
 
+I'm developing a **[dedicated JavaScript client](./client)**. Alternatively,
+you can use the endpoints listed below.
+
 ### Messages
 
 Messages come in two types. "Outgoing" messages that _you_, the operator, send
