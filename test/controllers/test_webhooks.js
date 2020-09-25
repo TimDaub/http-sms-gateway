@@ -203,4 +203,51 @@ test("delivering a webhook when the receiving server is down", async t => {
   t.teardown(teardown);
 });
 
-// TODO: Check if exception is caught when server is offline
+test("if connection is timing out when server is not responding with 200 OK", async t => {
+  init();
+  const worker = await createWorker(`
+		app.post("/", function(req, res) {
+      // NOTE: We intentionally sleep here and hold the connection open to see
+      // if the webhook delivery automatically times out.
+      require("child_process").execSync("sleep 50");
+      res.status(200).send();
+		});
+	`);
+
+  const wh = {
+    id: "abc",
+    url: `http://localhost:${worker.port}`,
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(wh);
+  const expected = {
+    id: "abc",
+    name: "incomingMessage",
+    message: '{"hello":"world"}',
+    trys: 0,
+    lastTry: new Date().toISOString(),
+    webhookId: wh.id
+  };
+  events.store(expected);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const dbEvt = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(dbEvt);
+
+  const whHandler = new WebhookHandler();
+  await whHandler.send({
+    ...expected,
+    secret: wh.secret,
+    event: wh.event,
+    url: wh.url
+  });
+  const updatedEvt = db
+    .prepare(`SELECT * FROM events WHERE id = ?`)
+    .get(expected.id);
+  t.assert(updatedEvt.trys === 1);
+  t.assert(updatedEvt.lastTry !== expected.lastTry);
+
+  t.teardown(teardown);
+});

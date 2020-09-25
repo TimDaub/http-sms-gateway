@@ -3,10 +3,11 @@ const { EventEmitter } = require("events");
 const { v4: uuidv4 } = require("uuid");
 const fetch = require("cross-fetch");
 const crypto = require("crypto");
+const AbortController = require("abort-controller");
 
 const logger = require("../logger.js");
 const db = require("./db.js");
-const { possibleEvents } = require("../constants.js");
+const { possibleEvents, timeout } = require("../constants.js");
 
 class WebhookHandler extends EventEmitter {
   constructor() {
@@ -51,15 +52,24 @@ class WebhookHandler extends EventEmitter {
       .update(evt.message)
       .digest("hex");
 
+    const controller = new AbortController();
+    const { signal } = controller;
+    signal.addEventListener("abort", () => {
+      throw new Error("Webhook delivery aborted; timeout");
+    });
+
     let res, error;
     try {
+      setTimeout(() => controller.abort(), timeout);
+
       res = await fetch(evt.url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-SMS-GATEWAY-Signature": sig
         },
-        body: evt.message
+        body: evt.message,
+        signal
       });
     } catch (err) {
       logger.error(

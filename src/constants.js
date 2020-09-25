@@ -1,4 +1,5 @@
 // @format
 module.exports = {
-  possibleEvents: ["incomingMessage"]
+  possibleEvents: ["incomingMessage"],
+  timeout: 5000
 };
