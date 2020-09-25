@@ -34,6 +34,8 @@ function storeWithId(msg) {
     }
   }
   const webhooks = new WebhookHandler();
+  delete msg.index;
+  delete msg.dateTimeCreated;
   webhooks.addEvent("incomingMessage", msg);
 }
 
