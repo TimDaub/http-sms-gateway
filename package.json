@@ -7,7 +7,7 @@
     "test": "ava --serial",
     "dev": "nodemon --watch 'src/**/*' -e js --exec 'node src/server.js | ./node_modules/.bin/pino-pretty --translateTime'",
     "init": "node ./scripts/init.js",
-    "production": "NODE_ENV='production' forever start src/server.js"
+    "production": "NODE_ENV='production' pm2 start src/server.js"
   },
   "repository": {
     "type": "git",
@@ -51,7 +51,6 @@
   "devDependencies": {
     "ava": "3.12.1",
     "expressively-mocked-fetch": "0.1.1",
-    "forever": "3.0.2",
     "pino-pretty": "4.2.1",
     "sinon": "9.0.3",
     "supertest": "4.0.2"
