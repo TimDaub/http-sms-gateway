@@ -246,3 +246,35 @@ test("if delete request deletes events and webhook", async t => {
 
   t.teardown(teardown);
 });
+
+test("if delete endpoint responds with error if id is invalid", async t => {
+  init();
+
+  const req = await supertest(app)
+    .del(`/api/v1/webhooks/invalid`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send();
+  t.assert(req.statusCode === 400);
+
+  t.teardown(teardown);
+});
+
+test("if webhook delete endpoint responds with error when id wasn't found", async t => {
+  init();
+  const webhook = {
+    id: uuidv4(),
+    url: "https://example.com",
+    secret: "aaaaaaaaaa",
+    event: "incomingMessage"
+  };
+  webhooks.store(webhook);
+
+  const nonExistent = uuidv4();
+  const req = await supertest(app)
+    .del(`/api/v1/webhooks/${nonExistent}`)
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send();
+  t.assert(req.statusCode === 404);
+
+  t.teardown(teardown);
+});

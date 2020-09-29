@@ -55,6 +55,7 @@ class WebhookHandler extends EventEmitter {
     const controller = new AbortController();
     const { signal } = controller;
     signal.addEventListener("abort", () => {
+      // NOTE: This error will be caught within fetch's try catch block.
       throw new Error("Webhook delivery aborted; timeout");
     });
 

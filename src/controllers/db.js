@@ -125,7 +125,14 @@ const webhooks = {
   },
   remove(id) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
-    return db.prepare("DELETE FROM webhooks WHERE id = ?").run(id);
+    return db.transaction(() => {
+      const webhook = db.prepare("SELECT * FROM webhooks WHERE id = ?").get(id);
+      if (webhook) {
+        return db.prepare("DELETE FROM webhooks WHERE id = ?").run(id);
+      } else {
+        throw new Error("Webhook wasn't deleted because id wasn't found");
+      }
+    })();
   },
   list: function(evt) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);

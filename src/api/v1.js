@@ -71,7 +71,19 @@ v1.get(
 );
 
 v1.delete("/webhooks/:id", param("id").isUUID(), (req, res, next) => {
-  webhooks.remove(req.params.id);
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const msg = "id needs to be valid uuid";
+    logger.error(msg, errors.array());
+    return next(createError(400, msg), errors.array());
+  }
+
+  try {
+    webhooks.remove(req.params.id);
+  } catch (err) {
+    logger.error(err.message);
+    return next(createError(404, err.message));
+  }
   res.status(200).send();
 });
 
