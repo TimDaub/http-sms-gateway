@@ -23,6 +23,16 @@ class SMSClient {
       })
     });
   }
+
+  async unsubscribe(id) {
+    return await fetch(`${this.host}/api/v1/webhooks`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.bearer}`
+      }
+    });
+  }
 }
 
 module.exports = SMSClient;
