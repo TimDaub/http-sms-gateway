@@ -1,6 +1,6 @@
 {
   "name": "http-sms-gateway-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A client for the http-sms-gateway.",
   "main": "./src/index.js",
   "scripts": {
