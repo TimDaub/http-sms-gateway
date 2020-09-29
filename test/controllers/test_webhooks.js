@@ -138,8 +138,6 @@ test("if trys are updated on unsuccessful webhook delivery", async t => {
   t.assert(dbEvt);
 
   const worker = await createWorker(`
-		const crypto = require("crypto");	
-
 		app.post("/", function(req, res) {
       res.status(500).send();
 		});

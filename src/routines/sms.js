@@ -36,6 +36,14 @@ function storeWithId(msg) {
   const webhooks = new WebhookHandler();
   delete msg.index;
   delete msg.dateTimeCreated;
+
+  // NOTE: A webhook receiver is likely to expect a valid phone number with a
+  // location code starting with a `+`. However, serialport-gsm does only give
+  // us a number without a `+` in many cases. Which is why we supply one here
+  // when necessary.
+  if (!msg.sender.includes("+")) {
+    msg.sender = `+${msg.sender}`;
+  }
   webhooks.addEvent("incomingMessage", msg);
 }
 

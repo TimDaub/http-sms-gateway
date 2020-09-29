@@ -41,6 +41,8 @@ class SMSHandler extends EventEmitter {
         return;
       }
 
+      // NOTE: We filter the original message down to the below listed
+      // property names.
       const messages = inbox.data.map(
         ({ sender, message, index, dateTimeSent }) => ({
           sender,

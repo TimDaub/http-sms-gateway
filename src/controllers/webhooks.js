@@ -63,6 +63,11 @@ class WebhookHandler extends EventEmitter {
     try {
       setTimeout(() => controller.abort(), timeout);
 
+      logger.info(
+        `Requesting POST ${evt.url} to deliver webhook message ${JSON.stringify(
+          evt.message
+        )}`
+      );
       res = await fetch(evt.url, {
         method: "POST",
         headers: {
@@ -74,9 +79,9 @@ class WebhookHandler extends EventEmitter {
       });
     } catch (err) {
       logger.error(
-        `Hit error when delivering webhook with id: ${evt.id} and error msg: ${
-          err.message
-        }`
+        `Looks like the server wasn't responding. Hit error when delivering webhook with id: ${
+          evt.id
+        } and error msg: ${err.message} and result ${JSON.stringify(res)}`
       );
       db.events.updateTrys(evt.id);
       return;
@@ -86,7 +91,11 @@ class WebhookHandler extends EventEmitter {
       logger.info(`Successful webhook delivery for event with id: ${evt.id}`);
       db.events.remove(evt.id);
     } else {
-      logger.info(`Failed webhook delivery for event with id: ${evt.id}`);
+      logger.info(
+        `Failed webhook delivery for event with id: ${evt.id} and status ${
+          res.status
+        }`
+      );
       db.events.updateTrys(evt.id);
     }
   }
