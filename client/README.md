@@ -14,6 +14,10 @@ See [tests](./test) for now.
 
 ## Changelog
 
+### 0.0.4
+
+- Add `send(receiver, text)` method.
+
 ### 0.0.3
 
 - Fix `unsubscribe` method by passing the webhook `id` in URL.
