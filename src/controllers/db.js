@@ -5,7 +5,7 @@ const path = require("path");
 const { readFileSync, unlinkSync } = require("fs");
 
 const logger = require("../logger.js");
-const { DB_PATH, SQLITE_SCHEMA_PATH } = process.env;
+const { DB_PATH, SQLITE_SCHEMA_PATH, NODE_ENV } = process.env;
 
 const sqlConfig = {
   path: path.resolve(__dirname, `../../${DB_PATH}`),
@@ -13,7 +13,7 @@ const sqlConfig = {
   options: {
     // NOTE: When trying to use the dedicated logger here, errors are thrown
     // when trying to write data into the SQL DB.
-    verbose: console.info
+    verbose: NODE_ENV !== "production" ? console.info : null
   }
 };
 

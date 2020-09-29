@@ -17,7 +17,7 @@ module.exports = {
     incomingSMSIndication: false,
     pin: SIM_PIN,
     customInitCommand: "AT^CURC=0",
-    logger: console
+    logger: NODE_ENV !== "production" ? console : null
   },
   logger: {
     level: LOG_LEVEL || "info",
