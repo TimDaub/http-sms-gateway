@@ -25,7 +25,7 @@ class SMSClient {
   }
 
   async unsubscribe(id) {
-    return await fetch(`${this.host}/api/v1/webhooks`, {
+    return await fetch(`${this.host}/api/v1/webhooks/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

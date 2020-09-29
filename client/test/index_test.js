@@ -30,8 +30,9 @@ test("if client can subscribe to webhooks", async t => {
 
 test("if a client can unsubscribe from webhooks by deleting", async t => {
   const bearer = "abc";
+  const id = "webhookdID";
   const worker = await createWorker(`
-    app.delete("/api/v1/webhooks", (req, res) => {
+    app.delete("/api/v1/webhooks/${id}", (req, res) => {
       if (req.get("Authorization") === "Bearer ${bearer}") {
         res.status(201).send();
       } else {
@@ -42,6 +43,6 @@ test("if a client can unsubscribe from webhooks by deleting", async t => {
   const url = `http://localhost:${worker.port}`;
   const client = new SMSClient(url, bearer);
 
-  const res = await client.unsubscribe("abc");
+  const res = await client.unsubscribe(id);
   t.assert(res.status === 201);
 });

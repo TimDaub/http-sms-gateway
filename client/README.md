@@ -14,6 +14,10 @@ See [tests](./test) for now.
 
 ## Changelog
 
+### 0.0.3
+
+- Fix `unsubscribe` method by passing the webhook `id` in URL.
+
 ### 0.0.2
 
 - Add `unsubscribe` method.
