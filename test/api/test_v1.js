@@ -48,6 +48,69 @@ test("if server responds with id", async t => {
   t.teardown(teardown);
 });
 
+test("if server accepts German number without country code", async t => {
+  init();
+
+  const expected = {
+    receiver: "01795345170",
+    text: "test"
+  };
+  const req = await supertest(app)
+    .post("/api/v1/outgoing")
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(expected);
+  t.assert(req.status === 202);
+  t.assert(req.body.status === "SCHEDULED");
+  t.assert(req.body.id);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const msg = db.prepare(`SELECT * FROM outgoing`).get();
+  t.assert(msg.receiver === "+491795345170");
+
+  t.teardown(teardown);
+});
+
+test("if server accepts German number without country code and arbitrary spaces", async t => {
+  init();
+
+  const expected = {
+    receiver: "0179 534 517 0",
+    text: "test"
+  };
+  const req = await supertest(app)
+    .post("/api/v1/outgoing")
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(expected);
+  t.assert(req.status === 202);
+  t.assert(req.body.status === "SCHEDULED");
+  t.assert(req.body.id);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const msg = db.prepare(`SELECT * FROM outgoing`).get();
+  t.assert(msg.receiver === "+491795345170");
+
+  t.teardown(teardown);
+});
+
+test("if server accepts German number with 00 country code and arbitrary spaces", async t => {
+  init();
+
+  const expected = {
+    receiver: "0049 179 534 517 0",
+    text: "test"
+  };
+  const req = await supertest(app)
+    .post("/api/v1/outgoing")
+    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
+    .send(expected);
+  t.assert(req.status === 202);
+  t.assert(req.body.status === "SCHEDULED");
+  t.assert(req.body.id);
+  const db = sqlite(sqlConfig.path, sqlConfig.options);
+  const msg = db.prepare(`SELECT * FROM outgoing`).get();
+  t.assert(msg.receiver === "+491795345170");
+
+  t.teardown(teardown);
+});
+
 test("if server rejects invalid values", async t => {
   const expected = {
     receiver: "+9999999",
@@ -66,23 +129,6 @@ test("if server rejects request that is not authorized", async t => {
     .post("/api/v1/outgoing")
     .send({ hello: "world" });
   t.assert(req.status === 401);
-});
-
-test("if server returns incoming sms filtered by sender", async t => {
-  init();
-  const expected = {
-    id: "abc",
-    sender: "1234",
-    message: "hello",
-    dateTimeSent: new Date()
-  };
-  incoming.store(expected);
-  const req = await supertest(app)
-    .get(`/api/v1/incoming?sender=${expected.sender}`)
-    .set({ Authorization: `Bearer ${BEARER_TOKEN}` })
-    .send();
-  t.assert(req.statusCode === 400);
-  t.teardown(teardown);
 });
 
 test("if server sends filtered result for received messages", async t => {

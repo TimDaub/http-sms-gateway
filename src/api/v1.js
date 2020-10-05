@@ -5,23 +5,27 @@ const { body, validationResult, query, param } = require("express-validator");
 const isgsm7 = require("isgsm7");
 const { v4: uuidv4 } = require("uuid");
 const createError = require("http-errors");
+const parsePhoneNumber = require("libphonenumber-js/min");
 
 const { possibleEvents } = require("../constants.js");
 const logger = require("../logger.js");
 const { outgoing, incoming, webhooks } = require("../controllers/db.js");
-let { ENABLED_COUNTRIES } = process.env;
-ENABLED_COUNTRIES = ENABLED_COUNTRIES.split(",");
-logger.info(
-  `Following countries are enabled for receiving/sending SMS: ${ENABLED_COUNTRIES.join(
-    ","
-  )}`
-);
+const { COUNTRY_OF_OPERATION } = process.env;
+logger.info(`Country of operation is: ${COUNTRY_OF_OPERATION}`);
 
 const v1 = express.Router();
+const numberError = new Error(
+  "Invalid mobile phone number (e.g. wrong country)"
+);
 
 v1.post(
   "/outgoing",
-  body("receiver").isMobilePhone(ENABLED_COUNTRIES),
+  body("receiver").custom(value => {
+    if (!parsePhoneNumber(value, COUNTRY_OF_OPERATION).isPossible()) {
+      throw numberError;
+    }
+    return true;
+  }),
   body("text").custom(value => {
     if (!isgsm7(value)) {
       throw new Error("text must be encoded as GSM 7-bit");
@@ -35,9 +39,10 @@ v1.post(
       return next(createError(400, "Body is malformed"), errors.array());
     }
 
+    const receiver = parsePhoneNumber(req.body.receiver, COUNTRY_OF_OPERATION);
     const id = uuidv4();
     const msg = {
-      receiver: req.body.receiver,
+      receiver: receiver.number,
       text: req.body.text,
       id,
       status: "SCHEDULED"
@@ -53,7 +58,12 @@ v1.post(
 
 v1.get(
   "/incoming",
-  query("sender").isMobilePhone(ENABLED_COUNTRIES),
+  query("sender").custom(value => {
+    if (!parsePhoneNumber(value, COUNTRY_OF_OPERATION).isPossible()) {
+      throw numberError;
+    }
+    return true;
+  }),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -65,7 +75,8 @@ v1.get(
         errors.array()
       );
     }
-    const messages = incoming.list(req.query.sender);
+    const sender = parsePhoneNumber(req.query.sender, COUNTRY_OF_OPERATION);
+    const messages = incoming.list(sender.number);
     res.status(200).send(messages);
   }
 );

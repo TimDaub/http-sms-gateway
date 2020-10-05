@@ -261,18 +261,14 @@ SQLITE_SCHEMA_PATH=src/sql/schema.sql
 BEARER_TOKEN=abc
 DEVICE_PATH=/dev/ttyUSB0
 SIM_PIN=1234
-ENABLED_COUNTRIES="de-DE,de-AT"
+COUNTRY_OF_OPERATION=DE
 LOG_LEVEL=debug
 ```
 
-**NOTE:** `ENABLED_COUNTRIES` refers to the mobile phone numbers we allow the
-gsm module to send SMS to. All this variable allows us to do is check the
+**NOTE:** `COUNTRY_OF_OPERATION` refers to the mobile phone numbers we allow
+the gsm module to send SMS to. All this variable allows us to do is check the
 number's structure. We use
-[`validator.js`](https://github.com/validatorjs/validator.js#validators), which
-means only values listed in the definition of the `isMobilePhone` function are
-allowed. They have to be separated by commas with no spaces in-between.  [This
-site](https://www.fakephonenumber.org) can be helpful to generate mobile phone
-numbers for testing.
+[`libphonenumber-js`](https://github.com/catamphetamine/libphonenumber-js).
 
 ### Running http-sms-gateway
 
