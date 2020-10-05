@@ -68,13 +68,15 @@ test("if messages from db get sent", async t => {
     id: "abc",
     receiver: "123",
     text: "ein test",
-    status: "SCHEDULED"
+    status: "SCHEDULED",
+    dateTimeCreated: new Date().toISOString()
   });
   outgoing.store({
     id: "cba",
     receiver: "321",
     text: "tset nie",
-    status: "SCHEDULED"
+    status: "SCHEDULED",
+    dateTimeCreated: new Date().toISOString()
   });
 
   const smsHandler = new SMSHandler({});
@@ -134,13 +136,15 @@ test("if currently processed messages are locked to avoid duplicate processing",
       id: "abc",
       receiver: "123",
       text: "ein test",
-      status: "SCHEDULED"
+      status: "SCHEDULED",
+      dateTimeCreated: new Date().toISOString()
     },
     {
       id: "cba",
       receiver: "321",
       text: "tset nie",
-      status: "SCHEDULED"
+      status: "SCHEDULED",
+      dateTimeCreated: new Date().toISOString()
     }
   ];
 

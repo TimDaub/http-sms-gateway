@@ -43,6 +43,7 @@ test("if server responds with id", async t => {
     .send(expected);
   t.assert(req.status === 202);
   t.assert(req.body.status === "SCHEDULED");
+  t.assert(req.body.dateTimeCreated);
   t.assert(req.body.id);
 
   t.teardown(teardown);

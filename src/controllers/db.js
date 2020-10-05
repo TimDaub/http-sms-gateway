@@ -43,7 +43,6 @@ function init() {
 const outgoing = {
   store: function(msg) {
     const db = sqlite(sqlConfig.path, sqlConfig.options);
-    msg.dateTimeCreated = new Date().toISOString();
 
     logger.info(`Storing outgoing message ${JSON.stringify(msg)}`);
     return db

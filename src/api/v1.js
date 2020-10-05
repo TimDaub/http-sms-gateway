@@ -45,13 +45,15 @@ v1.post(
       receiver: receiver.number,
       text: req.body.text,
       id,
-      status: "SCHEDULED"
+      status: "SCHEDULED",
+      dateTimeCreated: new Date().toISOString()
     };
 
     outgoing.store(msg);
     res.status(202).send({
       id,
-      status: "SCHEDULED"
+      status: msg.status,
+      dateTimeCreated: msg.dateTimeCreated
     });
   }
 );

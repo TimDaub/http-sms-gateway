@@ -55,7 +55,8 @@ test("if function stores data in sqlite database", t => {
     id: "abc",
     receiver: "1234",
     text: "hello",
-    status: "SCHEDULED"
+    status: "SCHEDULED",
+    dateTimeCreated: new Date().toISOString()
   };
   outgoing.store(expected);
   const db = sqlite(sqlConfig.path, sqlConfig.options);
@@ -72,7 +73,8 @@ test("if function returns all message of a status", t => {
     id: "abc",
     receiver: "1234",
     text: "hello",
-    status: "SCHEDULED"
+    status: "SCHEDULED",
+    dateTimeCreated: new Date().toISOString()
   };
   outgoing.store(expected);
   const [msg] = outgoing.getAllMessages("SCHEDULED");
@@ -86,7 +88,8 @@ test("if function updates status in db", t => {
     id: "abc",
     receiver: "1234",
     text: "hello",
-    status: "SCHEDULED"
+    status: "SCHEDULED",
+    dateTimeCreated: new Date().toISOString()
   };
   outgoing.store(expected);
 
@@ -199,13 +202,15 @@ test("if messages are indeed popped when popAllMessages is called", t => {
       id: "abc",
       receiver: "1234",
       text: "hello",
-      status: "SCHEDULED"
+      status: "SCHEDULED",
+      dateTimeCreated: new Date().toISOString()
     },
     {
       id: "cba",
       receiver: "4321",
       text: "olleh",
-      status: "SCHEDULED"
+      status: "SCHEDULED",
+      dateTimeCreated: new Date().toISOString()
     }
   ];
   outgoing.store(expected[0]);
