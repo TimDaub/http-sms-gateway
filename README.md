@@ -50,7 +50,7 @@ to copy it on your server. It may make sense comparing the HMACs with node's
 
 Lastly, a word on an event's delivery: The gateway will try to deliver an event
 as fast as possible. In cases your server is down or doesn't respond with a
-`200 OK` status code, another try is started in `2^trys` minutes for [12
+`200 OK` status code, another try is started in `1^trys` minutes for [12
 times](https://github.com/TimDaub/http-sms-gateway/blob/d7070f4ad6e56a60a7265f1db0461d747f76022d/src/controllers/db.js#L169-L187).
 
 #### `POST /webhooks`
