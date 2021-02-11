@@ -67,7 +67,7 @@ const outgoing = {
       const msgs = db
         .prepare("SELECT * FROM outgoing WHERE status = ?")
         .all(_status);
-      db.prepare("UPDATE outgoing SET status = ?").run("PROCESSING");
+      db.prepare("UPDATE outgoing SET status = ?").run("SENDING");
       return msgs;
     })();
     return msgs;

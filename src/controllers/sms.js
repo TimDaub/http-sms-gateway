@@ -27,6 +27,7 @@ class SMSHandler extends EventEmitter {
   }
 
   sendAll() {
+    logger.info("Attempting to send all messages of type=SCHEDULED.");
     outgoing.popAllMessages("SCHEDULED").forEach(this.send);
   }
 
