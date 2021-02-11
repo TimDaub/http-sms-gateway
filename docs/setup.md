@@ -301,7 +301,7 @@ We're using `pm2` to run in production. To do so:
 ```bash
 $ npm i -g pm2
 $ pm2 start
-``
+```
 
 Additionally, if you want to make sure that your script is restarted upon the
 machine rebooting, run `pm2 startup`.
